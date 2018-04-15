@@ -1,12 +1,16 @@
 package game;
 
 import java.util.Iterator;
+import java.util.List;
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import model.Card;
+import model.CardPile;
 import view.CardPileView;
 import view.CardView;
 
@@ -29,7 +33,27 @@ public class Main extends Application{
         
         BorderPane bord = new BorderPane();
         bord.setCenter(gameArea);
+        Button b1 = new Button("b1");
+        Button b2 = new Button("b2");
+        Button b3 = new Button("b3");
+        Button b4 = new Button("b4");
+        HBox hbox = new HBox(5);
+        hbox.getChildren().addAll(b1,b2,b3,b4);
+        bord.setBottom(hbox);
+        b1.setOnAction(e -> {
+            
+            Card card = game.getDeck().getById(gameArea.getHand0PileViews().get(0).getTopCardView().getShortID());
+            CardView cardView = gameArea.getHand0PileViews().get(0).getTopCardView();
+            CardPile sourcePile = game.getHand0Piles().get(0);
+            CardPileView sourcePileView = gameArea.getHand0PileViews().get(0);
+            CardPileView destPileView = gameArea.getMainPileView();
+            List<CardView> draggedCardViews = sourcePileView.cardViewsUnder(cardView);
+            List<Card> draggedCards = sourcePile.cardsUnder(card);
+            
+           mouseUtil.handleValidMove(card, sourcePile, sourcePileView, destPileView,draggedCardViews,draggedCards);
+           mouseUtil.startTurn(sourcePile, sourcePileView, cardView);
         
+        });
         game = new Game();
         game.startNewGame();
         mouseUtil = new MouseUtil(game,gameArea);
