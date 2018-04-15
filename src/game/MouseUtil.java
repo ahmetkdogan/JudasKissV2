@@ -55,6 +55,28 @@ public class MouseUtil {
     
     private static int currentRound = 1;
     
+    EventHandler<MouseEvent> onMouseClickedHandler = e -> {
+        CardView cardView = (CardView) e.getSource();
+        
+        Card card = game.getDeck().getById(cardView.getShortID());
+        
+        CardPileView activePileView = cardView.getContainingPile();
+        
+        CardPile activePile = game.getPileById(activePileView.getShortID());
+        
+        draggedCardViews = activePileView.cardViewsUnder(cardView);
+        draggedCards = activePile.cardsUnder(card);
+        
+        if(draggedCards.size() > 1 && !pilePlayed  && (activePile.equals(game.getPlayerSlotPiles().get(0))|| activePile.equals(game.getPlayerSlotPiles().get(1)) 
+                || activePile.equals(game.getPlayerSlotPiles().get(2)) || activePile.equals(game.getPlayerSlotPiles().get(3)))){
+            pilePlayed = true;
+            startTurn(activePile, activePileView, cardView);
+            return;
+            
+        }
+        
+        
+    };
     
     
     EventHandler<MouseEvent> onMousePressedHandler = e -> {
@@ -81,7 +103,7 @@ public class MouseUtil {
         draggedCards = activePile.cardsUnder(card);
         
         draggedCardViews.forEach(cw -> {
-            cw.toFront();;
+            cw.toFront();
             cw.setTranslateX(offsetX);
             cw.setTranslateY(offsetY);
         });
@@ -99,17 +121,9 @@ public class MouseUtil {
         CardPile activePile = game.getPileById(activePileView.getShortID());
         
         if(checkAllPiles(card,cardView,activePile,activePileView)){
-            cardView.flip();
+           
              
-            turn = new Turn(gameArea, activePile, activePileView);
-            if(turn.isTurnFinished()){ turn.startTurn(); turnPlayed++;}
-            if(turnPlayed == 16 && currentRound==1){turn.startTurn(); currentRound++;}
-            if(turnPlayed == 32 && currentRound==2){turn.startTurn(); currentRound++;}
-            
-            cardView.setMouseTransparent(true);
-            if(turnPlayed == 48 ) System.out.println("Game Over");
-            
-            
+            startTurn(activePile, activePileView, cardView);
             return;
             
             
@@ -131,6 +145,7 @@ public class MouseUtil {
         card.setOnMousePressed(onMousePressedHandler);
         card.setOnMouseDragged(onMouseDraggedHandler);
         card.setOnMouseReleased(onMouseReleasedHandler);
+        card.setOnMouseClicked(onMouseClickedHandler);
     }
     
     private boolean checkAllPiles(Card card,CardView cardView,CardPile activePile,
@@ -178,6 +193,21 @@ public class MouseUtil {
             CardPileView sourcePileView,CardPileView destPileView){
         CardPile destPile = game.getPileById(destPileView.getShortID());
         
+        if(game.getRules().isMoveValid(draggedCards, destPile)){
+            game.moveCards(draggedCards, sourcePile, destPile);
+            slideToPile(draggedCardViews,sourcePileView,destPileView);
+            draggedCards = null;
+            draggedCardViews = null;
+            return true;
+        }
+        else {
+         return false;   
+        }
+        
+    }
+    public boolean handleValidMove(Card card, CardPile sourcePile,
+            CardPileView sourcePileView,CardPileView destPileView,List<CardView> draggedCardViews,List<Card> draggedCards){
+        CardPile destPile = game.getPileById(destPileView.getShortID());
         if(game.getRules().isMoveValid(draggedCards, destPile)){
             game.moveCards(draggedCards, sourcePile, destPile);
             slideToPile(draggedCardViews,sourcePileView,destPileView);
@@ -278,7 +308,8 @@ public class MouseUtil {
           });
         }
         if(cardsToSlide.size() == 1) cardPlayed = true;
-        if(cardsToSlide.size() > 1) pilePlayed = true;
+        if(!destPile.isEmpty() && cardsToSlide.size() > 1 && destPile.getTopCardView().getCard().getRank().equals(cardsToSlide.get(0).getCard().getRank())) pilePlayed = false;
+        else if(cardsToSlide.size() > 1) pilePlayed = true;
                
     }
         
@@ -325,6 +356,16 @@ public class MouseUtil {
         double x,y;
     }
     
-    
+    public void startTurn(CardPile activePile, CardPileView activePileView,CardView cardView){
+        turn = new Turn(gameArea, activePile, activePileView);
+            if(turn.isTurnFinished()){ turn.startTurn(); turnPlayed++;}
+            if(turnPlayed == 16 && currentRound==1){turn.startTurn(); currentRound++;}
+            if(turnPlayed == 32 && currentRound==2){turn.startTurn(); currentRound++;}
+            
+            cardView.setMouseTransparent(true);
+            if(turnPlayed == 48 ) System.out.println("Game Over");
+            
+             if(cardView.isFaceDown())cardView.flip();
+    }
     
 }
