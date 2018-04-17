@@ -31,7 +31,6 @@ public class Game {
     
     
     public Game(){
-        this.deck = CardDeck.createCardDeck();
         this.mainPile = new CardPile(CardPile.Type.Main,"M");
         this.slotPiles = FXCollections.observableArrayList();
         this.playerSlotPiles = FXCollections.observableArrayList();
@@ -45,13 +44,13 @@ public class Game {
         for(int i = 0; i<4 ; i++)
             playerSlotPiles.add(new CardPile(CardPile.Type.PlayerSlot,"P"+i));
         for(int i = 0; i<4 ; i++)
-            hand0Piles.add(new CardPile(CardPile.Type.PlayerSlot,"P0H"+i));
+            hand0Piles.add(new CardPile(CardPile.Type.Hand,"P0H"+i));
         for(int i = 0; i<4 ; i++)
-            hand1Piles.add(new CardPile(CardPile.Type.PlayerSlot,"P1H"+i));
+            hand1Piles.add(new CardPile(CardPile.Type.Hand,"P1H"+i));
         for(int i = 0; i<4 ; i++)
-            hand2Piles.add(new CardPile(CardPile.Type.PlayerSlot,"P2H"+i));
+            hand2Piles.add(new CardPile(CardPile.Type.Hand,"P2H"+i));
         for(int i = 0; i<4 ; i++)
-            hand3Piles.add(new CardPile(CardPile.Type.PlayerSlot,"P3H"+i));
+            hand3Piles.add(new CardPile(CardPile.Type.Hand,"P3H"+i));
         this.rules = new Rules(mainPile,slotPiles,playerSlotPiles,hand0Piles);
         
         
@@ -136,9 +135,10 @@ public class Game {
     
     
     public void startNewGame(){
-        deck.shuffle();
+       deck = CardDeck.createCardDeckByArray(Client.deckInfo);
+       Iterator<Card> deckIterator = deck.iterator();
         
-        Iterator<Card> deckIterator = deck.iterator();
+       
        
        for(CardPile handPile : hand0Piles){
            handPile.addCard(deckIterator.next());
@@ -148,6 +148,7 @@ public class Game {
        }
        for(CardPile handPile : hand0Piles){
            handPile.addCard(deckIterator.next());
+           System.out.println(handPile.getTopCard());
        }
        //
        for(CardPile handPile : hand1Piles){

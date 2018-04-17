@@ -293,6 +293,36 @@ public class GameArea extends Pane{
     public void setMainPileView(CardPileView mainPileView) {
         this.mainPileView = mainPileView;
     }
+    public CardPileView getPileViewById(String id){
+        CardPileView result;
+        
+        result = slotPileViews.stream()
+                .filter(pileView -> pileView.getShortID().equals(id)).findFirst().orElse(null);
+        if(result != null) return result;
+        
+        result = playerSlotPileViews.stream()
+                .filter(pileView -> pileView.getShortID().equals(id)).findFirst().orElse(null);
+        if(result != null) return result;
+        
+        result = hand0PileViews.stream()
+                .filter(pileView -> pileView.getShortID().equals(id)).findFirst().orElse(null);
+        if(result != null) return result;
+        result = hand1PileViews.stream()
+                .filter(pileView -> pileView.getShortID().equals(id)).findFirst().orElse(null);
+        if(result != null) return result;
+        result = hand2PileViews.stream()
+                .filter(pileView -> pileView.getShortID().equals(id)).findFirst().orElse(null);
+        if(result != null) return result;
+        result = hand3PileViews.stream()
+                .filter(pileView -> pileView.getShortID().equals(id)).findFirst().orElse(null);
+        if(result != null) return result;
+        
+        if(mainPileView.getShortID().equals(id)) return mainPileView;
+        if(deckPileView.getShortID().equals(id)) return deckPileView;
+        System.out.println("PileView not found");
+        return null;
+        
+    }
 
     
     

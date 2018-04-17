@@ -25,6 +25,7 @@ import java.util.ListIterator;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseButton;
 
 
 public class MouseUtil {
@@ -55,7 +56,14 @@ public class MouseUtil {
     
     private static int currentRound = 1;
     
+    private CardPileView destPileView2;
+    
+    private Client client;
+    
+    private CardPileView dummy = new CardPileView(10, "dummy");
+    
     EventHandler<MouseEvent> onMouseClickedHandler = e -> {
+        if(e.getButton() == MouseButton.SECONDARY){
         CardView cardView = (CardView) e.getSource();
         
         Card card = game.getDeck().getById(cardView.getShortID());
@@ -67,24 +75,29 @@ public class MouseUtil {
         draggedCardViews = activePileView.cardViewsUnder(cardView);
         draggedCards = activePile.cardsUnder(card);
         
-        if(draggedCards.size() > 1 && !pilePlayed  && (activePile.equals(game.getPlayerSlotPiles().get(0))|| activePile.equals(game.getPlayerSlotPiles().get(1)) 
+        client.sendInfo(card, cardView, activePile, activePileView, dummy);
+       /* if(draggedCards.size() > 1 && !pilePlayed  && (activePile.equals(game.getPlayerSlotPiles().get(0))|| activePile.equals(game.getPlayerSlotPiles().get(1)) 
                 || activePile.equals(game.getPlayerSlotPiles().get(2)) || activePile.equals(game.getPlayerSlotPiles().get(3)))){
             pilePlayed = true;
+            cardView.setLayoutX(cardView.getLayoutX()+10);
             startTurn(activePile, activePileView, cardView);
             return;
             
+        }*/
+        
         }
-        
-        
     };
     
     
     EventHandler<MouseEvent> onMousePressedHandler = e -> {
+        if(e.getButton()!=MouseButton.SECONDARY){
         mousePos.x = e.getSceneX();
         mousePos.y = e.getSceneY();
+        }
     };
     
     EventHandler<MouseEvent> onMouseDraggedHandler = e-> {
+        if(e.getButton() != MouseButton.SECONDARY){
         double offsetX = e.getSceneX() - mousePos.x;
         double offsetY = e.getSceneY() - mousePos.y;
         
@@ -107,9 +120,11 @@ public class MouseUtil {
             cw.setTranslateX(offsetX);
             cw.setTranslateY(offsetY);
         });
+        }
     };
     
     EventHandler<MouseEvent> onMouseReleasedHandler = e ->{
+        if(e.getButton() != MouseButton.SECONDARY){
         if(draggedCards == null && draggedCardViews == null) return;
         
         CardView cardView = (CardView) e.getSource();
@@ -120,10 +135,13 @@ public class MouseUtil {
         
         CardPile activePile = game.getPileById(activePileView.getShortID());
         
-        if(checkAllPiles(card,cardView,activePile,activePileView)){
-           
+        if(checkAllPiles(card,cardView,activePile,activePileView) && game.getRules().isMoveValid(draggedCards, activePile)){
+            System.out.println(destPileView2);
+            System.out.println(client);
+            client.sendInfo(card, cardView, activePile, activePileView, destPileView2);
+            
              
-            startTurn(activePile, activePileView, cardView);
+            //startTurn(activePile, activePileView, cardView);
             return;
             
             
@@ -132,12 +150,14 @@ public class MouseUtil {
         //draggedCard=null;
         draggedCardViews = null;
         draggedCards=null;
+        }
         
     };
     
-    public MouseUtil(Game game,GameArea gameArea){
+    public MouseUtil(Game game,GameArea gameArea,Client client){
         this.game = game;
         this.gameArea = gameArea;
+        this.client = client;
     }
     
     public void makeDraggable(CardView card){
@@ -160,8 +180,8 @@ public class MouseUtil {
         boolean result = false;
         
         if(!pileView.equals(activePileView) && 
-                isOverPile(cardView,pileView) &&
-                handleValidMove(card,activePile,activePileView,pileView))
+                isOverPile(cardView,pileView) /*&&
+                handleValidMove(card,activePile,activePileView,pileView)*/)
             result = true;
         
         return result;
@@ -172,21 +192,36 @@ public class MouseUtil {
         boolean result = false;
         
         for(CardPileView pileView : pileViews){
-            if(pileView.equals(activePileView)) continue;
+            if(pileView.equals(activePileView)){
+                result = false; 
+                break;/////////// 17.35 - 17.04.2017
+            }
             
-            if(isOverPile(cardView,pileView) && 
-                    handleValidMove(card,activePile,activePileView,pileView))
+            if(isOverPile(cardView,pileView) /*&& 
+                    handleValidMove(card,activePile,activePileView,pileView)*/){
                 result = true;
+            }
             
         }
         return result;
     }
     
     private boolean isOverPile(CardView cardView,CardPileView pileView){
-        if(pileView.isEmpty())
-            return cardView.getBoundsInParent().intersects(pileView.getBoundsInParent());
-        else
-            return cardView.getBoundsInParent().intersects(pileView.getTopCardView().getBoundsInParent());
+        if(pileView.isEmpty()){
+            if(cardView.getBoundsInParent().intersects(pileView.getBoundsInParent())){
+                destPileView2 = pileView;
+                return cardView.getBoundsInParent().intersects(pileView.getBoundsInParent());
+            }
+            else return cardView.getBoundsInParent().intersects(pileView.getBoundsInParent());
+        }
+        else{
+            if(cardView.getBoundsInParent().intersects(pileView.getTopCardView().getBoundsInParent())){
+                destPileView2 = pileView;
+                return cardView.getBoundsInParent().intersects(pileView.getTopCardView().getBoundsInParent());
+            }
+            else return cardView.getBoundsInParent().intersects(pileView.getTopCardView().getBoundsInParent());
+        }
+            
     }
     
     private boolean handleValidMove(Card card, CardPile sourcePile,
@@ -221,7 +256,7 @@ public class MouseUtil {
         
     }
     
-    private void slideBack(CardView card){
+     void slideBack(CardView card){
         double sourceX = card.getLayoutX() + card.getTranslateX();
         double sourceY = card.getLayoutY() + card.getTranslateY();
         

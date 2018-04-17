@@ -5,6 +5,15 @@ public class Card {
     private Suit suit;
     private Rank rank;
     private String id;
+    private CardPile containingPile;
+
+    public CardPile getContainingPile() {
+        return containingPile;
+    }
+
+    public void setContainingPile(CardPile containingPile) {
+        this.containingPile = containingPile;
+    }
     
     public Card(Suit suit, Rank rank){
         this.suit = suit;

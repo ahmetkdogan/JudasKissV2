@@ -5,5 +5,15 @@ public enum Suit{
   Clubs,
   Spades,
   Hearts,
-  Diamonds
+  Diamonds;
+  
+  public static Suit getSuit(String suit){
+      switch(suit){
+          case "C" : return Clubs;
+          case "S" : return Spades;
+          case "H" : return Hearts;
+          case "D" : return Diamonds;
+      }
+      return null;
+  }
 }

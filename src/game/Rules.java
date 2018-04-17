@@ -62,7 +62,7 @@ public class Rules {
         return card1.getRank() == card2.getRank();
     }
     
-    public boolean isMoveValid(Card card, CardPile destPile){
+   /* public boolean isMoveValid(Card card, CardPile destPile){
        if(destPile.getType() == CardPile.Type.Deck) return false;
        if(destPile.getType() == CardPile.Type.Hand) return false;
        if(destPile.getType() == CardPile.Type.Slot){
@@ -76,7 +76,7 @@ public class Rules {
        if(destPile.getType() == CardPile.Type.Main) return true;
        
        return false;
-    }
+    }*/
     
     public boolean isMoveValid(List<Card> cards, CardPile destPile){
        boolean temp = false;
@@ -84,9 +84,14 @@ public class Rules {
        if(destPile.getType() == CardPile.Type.Deck) return false;
        if(destPile.getType() == CardPile.Type.Hand) return false;
        
+       
        if(destPile.getType() == CardPile.Type.Slot){
-           if(destPile.isEmpty()) return false;
+           if(destPile.isEmpty()) 
+               return false;
+               
+           
            else{
+               System.out.println(destPile.getTopCard());
                for(Card card : cards){
                     temp = card.getRank() == destPile.getTopCard().getRank();
                     if(!temp) return false;
@@ -96,8 +101,14 @@ public class Rules {
        }
       
        if(destPile.getType() == CardPile.Type.PlayerSlot){
+           if(destPile.isEmpty()) {
+               System.out.println("pile not found");
+               return false;
+           }
+           
            if(!destPile.getCards().isEmpty() && cards.size()<2) return cards.get(0).getRank()==destPile.getTopCard().getRank();
            else if(cards.size()>=2){
+               System.out.println("pile found");
                for(Card card : cards){
                    if(card.getRank() != tempRank) return false;
                    tempRank = card.getRank();

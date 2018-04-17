@@ -46,6 +46,7 @@ public class CardPile implements Iterable<Card>{
     
     public void addCard(Card card){
         cards.add(card);
+        card.setContainingPile(this);
     }
     
     public boolean isEmpty(){
