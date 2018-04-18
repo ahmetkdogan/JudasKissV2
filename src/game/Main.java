@@ -11,6 +11,7 @@ import java.util.List;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -29,6 +30,7 @@ public class Main extends Application {
     private Game game;
     private MouseUtil mouseUtil;
     private Client client;
+    private Player player = new Player();
     static List<CardView> cardViewList = new ArrayList<>();
 
     public static void main(String[] args) {
@@ -38,7 +40,8 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         gameArea = new GameArea(new Image("/images/background.png"));
-
+        
+        
         BorderPane bord = new BorderPane();
         bord.setCenter(gameArea);
         Button b1 = new Button("b1");
@@ -61,8 +64,8 @@ public class Main extends Application {
         game = new Game();
         
        
-        client = new Client(gameArea, game);
-        mouseUtil = new MouseUtil(game, gameArea, client);
+        client = new Client(gameArea, game,player);
+        mouseUtil = new MouseUtil(game, gameArea, client,player);
         client.start();
         while(true){
             Thread.sleep(1000);
@@ -72,7 +75,6 @@ public class Main extends Application {
 
             Scene scene = new Scene(bord, WIDTH, HEIGHT);
 
-            primaryStage.setTitle("Game");
             primaryStage.setScene(scene);
             primaryStage.show();
             primaryStage.setOnCloseRequest(e -> {
@@ -83,7 +85,7 @@ public class Main extends Application {
             
         }
 
-
+        primaryStage.setTitle(player.getPlayerName());
     }
 
     private void prepareGameAreaForNewGame() {
@@ -108,7 +110,7 @@ public class Main extends Application {
             gameArea.cardViewList.add(pileView.getTopCardView());
             mouseUtil.makeDraggable(pileView.getTopCardView());
             gameArea.getChildren().add(pileView.getTopCardView());
-            pileView.getTopCardView().flip();
+            pileView.getTopCardView().setMouseTransparent(true);
         }
         //
 
@@ -195,6 +197,30 @@ public class Main extends Application {
             gameArea.getDeckPileView().getTopCardView().setMouseTransparent(false);
             gameArea.getDeckPileView().getTopCardView().flip();
         });
+        if(player.getPlayerName().equals("player0")){
+            for (CardPileView pileView : gameArea.getHand0PileViews()) {
+            pileView.getTopCardView().flip();
+            pileView.getTopCardView().setMouseTransparent(false);
+        }
+        }
+        else if(player.getPlayerName().equals("player1")){
+            for (CardPileView pileView : gameArea.getHand1PileViews()) {
+            pileView.getTopCardView().flip();
+            pileView.getTopCardView().setMouseTransparent(false);
+        }
+        }
+        else if(player.getPlayerName().equals("player2")){
+            for (CardPileView pileView : gameArea.getHand2PileViews()) {
+            pileView.getTopCardView().flip();
+            pileView.getTopCardView().setMouseTransparent(false);
+        }
+        }
+        else if(player.getPlayerName().equals("player3")){
+            for (CardPileView pileView : gameArea.getHand3PileViews()) {
+            pileView.getTopCardView().flip();
+            pileView.getTopCardView().setMouseTransparent(false);
+        }
+        }
 
     }
 
@@ -219,7 +245,7 @@ public class Main extends Application {
 }
 
 class Client extends Thread {
-
+    Player player;
     MouseUtil mouseUtil;
     GameArea gameArea;
     Game game;
@@ -227,20 +253,28 @@ class Client extends Thread {
     ObjectOutputStream objOut;
     static String[] deckInfo = new String[52];
     boolean deckArrived = false;
-    Client(GameArea gameArea, Game game) {
+    Client(GameArea gameArea, Game game,Player player) {
         this.gameArea = gameArea;
         this.game = game;
-        mouseUtil = new MouseUtil(game, gameArea, this);
+        this.player = player;
+        mouseUtil = new MouseUtil(game, gameArea, this,player);
     }
 
     public void run() {
         try (
                 Socket socket = new Socket("localhost", 5555);
-                PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));) {
+                
+                ) {
+            
+            
             objOut = new ObjectOutputStream(socket.getOutputStream());
             objIn = new ObjectInputStream(socket.getInputStream());
+            String playerName = objIn.readObject().toString();
+            System.out.println(playerName);
+            player.setPlayerName(playerName);
+            
             deckInfo = (String[]) objIn.readObject();
+            System.out.println("c");
             deckArrived = true;
             
             while (true) {

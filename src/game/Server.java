@@ -40,11 +40,16 @@ class GameProtocol extends Thread {
     }
 
     public void run() {
-        try (
-                PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));) {
+        try {
+            
+            
             objOut = new ObjectOutputStream(socket.getOutputStream());
             objIn = new ObjectInputStream(socket.getInputStream());
+            String playerName = "player"+(clients.size()-1);
+            objOut.writeObject(playerName);
+            System.out.println(playerName);
+            
+            
             Iterator<Card> deckIterator = deck.iterator();
             List<String> deckInfoList = new ArrayList<>();
             deckIterator.forEachRemaining(card -> {

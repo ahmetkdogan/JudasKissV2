@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 import javafx.collections.FXCollections;
+import javafx.scene.control.Label;
 import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Background;
@@ -30,7 +31,11 @@ public class GameArea extends Pane{
     private List<CardPileView> hand3PileViews;
     private CardPileView mainPileView;
     private CardPileView deckPileView;
+    public Label turn;
     
+    public void setTurn(String a){
+        turn.setText(a);
+    }
     public GameArea(){
         this.slotPileViews = FXCollections.observableArrayList();
         this.playerSlotPileViews = FXCollections.observableArrayList();
@@ -56,6 +61,10 @@ public class GameArea extends Pane{
         buildHand3Piles();
         buildMainPile();
         buildDeckPile();
+        turn = new Label("Player1's Turn");
+        getChildren().add(turn);
+        turn.setLayoutX(500);
+        turn.setLayoutY(500);
     }
 
     public CardPileView getDeckPileView() {

@@ -60,6 +60,8 @@ public class MouseUtil {
     
     private Client client;
     
+    private Player player;
+    
     private CardPileView dummy = new CardPileView(10, "dummy");
     
     EventHandler<MouseEvent> onMouseClickedHandler = e -> {
@@ -134,8 +136,7 @@ public class MouseUtil {
         CardPileView activePileView = cardView.getContainingPile();
         
         CardPile activePile = game.getPileById(activePileView.getShortID());
-        
-        if(checkAllPiles(card,cardView,activePile,activePileView) && game.getRules().isMoveValid(draggedCards, activePile)){
+        if(checkAllPiles(card,cardView,activePile,activePileView)){
             System.out.println(destPileView2);
             System.out.println(client);
             client.sendInfo(card, cardView, activePile, activePileView, destPileView2);
@@ -154,10 +155,11 @@ public class MouseUtil {
         
     };
     
-    public MouseUtil(Game game,GameArea gameArea,Client client){
+    public MouseUtil(Game game,GameArea gameArea,Client client,Player player){
         this.game = game;
         this.gameArea = gameArea;
         this.client = client;
+        this.player = player;
     }
     
     public void makeDraggable(CardView card){
@@ -392,7 +394,7 @@ public class MouseUtil {
     }
     
     public void startTurn(CardPile activePile, CardPileView activePileView,CardView cardView){
-        turn = new Turn(gameArea, activePile, activePileView);
+        turn = new Turn(gameArea, activePile, activePileView,player);
             if(turn.isTurnFinished()){ turn.startTurn(); turnPlayed++;}
             if(turnPlayed == 16 && currentRound==1){turn.startTurn(); currentRound++;}
             if(turnPlayed == 32 && currentRound==2){turn.startTurn(); currentRound++;}
