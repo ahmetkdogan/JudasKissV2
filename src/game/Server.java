@@ -39,7 +39,8 @@ class GameProtocol extends Thread {
     private static GameRoom room2;
     private static List<GameProtocol> room1Protocol = new ArrayList<>();
     private static List<GameProtocol> room2Protocol = new ArrayList<>();
-    private static int temp = 0;
+    private static int room1Size = 0;
+    private static int room2Size = 0;
     Socket socket;
     String[] info = new String[5];
     String[] roomInfoIn = new String[2];
@@ -72,16 +73,14 @@ class GameProtocol extends Thread {
             objOut.writeInt(2); //1 
 
             try {
+                //SEND ROOMS//
                 objOut.writeObject(room1);//2
                 objOut.writeObject(room2);
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
                         //SEND PLAYER NAME
-                String playerName = "player"+temp;
-                sendObj(playerName);
-                temp++;
-                System.out.println(playerName);
+                
             
 
             while (true) {
@@ -100,12 +99,17 @@ class GameProtocol extends Thread {
                     }
                     containingRoom = roomInfoIn[1].equals("room1") ? room1:room2;
                     if (roomInfoIn[0].equals("room1")) {
+
                         room1.addPlayer(roomInfoIn[1]);
                         room1Protocol.add(this);
                         updateRoomInfo(roomInfoOut,roomInfoIn);
-                        clients.forEach(e -> {
+                        room1Protocol.forEach(e -> {
                             e.sendInfo(roomInfoOut);
                         });
+                        String playerName = "player"+room1Size;
+                        sendObj(playerName);
+                        room1Size++;
+                        System.out.println(playerName);                        
 
                     } else if (room2.equals(roomInfoIn[0])) {
                         room2.addPlayer(roomInfoIn[1]);
@@ -114,7 +118,10 @@ class GameProtocol extends Thread {
                         room2Protocol.forEach(e -> {
                             e.sendInfo(roomInfoOut);
                         });
-                        
+                        String playerName = "player"+room2Size;
+                        sendObj(playerName);
+                        room2Size++;
+                        System.out.println(playerName);                        
                     }
 
                 } catch (ClassNotFoundException e) {

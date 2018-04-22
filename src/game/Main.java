@@ -17,6 +17,11 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -37,12 +42,12 @@ public class Main extends Application {
     private Player player = new Player("nonick");
     private static int temp = 0;
     private static List<GameRoom> roomList = new ArrayList<>();
+    private static List<GameRoomView> roomViewList = new ArrayList<>();
     CountDownLatch latch = new CountDownLatch(1);//----/-/-/-/-
-    private Client client = new Client(gameArea, game, player,latch,roomList,this);
+    private Client client = new Client(gameArea, game, player,latch,roomList,this,roomViewList);
     private MouseUtil mouseUtil = new MouseUtil(game, gameArea, client, player);
     private final String IP = "localhost";
     private final int PORT = 5555;
-    private GameRoomView gameRoomView;
     static List<CardView> cardViewList = new ArrayList<>();
     Stage primaryStage;
 
@@ -52,6 +57,8 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        
+        client.start();
         this.primaryStage=primaryStage;
         primaryStage.setScene(mainMenu());
         primaryStage.show();
@@ -63,7 +70,13 @@ public class Main extends Application {
         
         
     }
+
+    public Player getPlayer() {
+        return player;
+    }
+    
     public Scene mainMenu(){
+
         Button startButton = new Button("START");
         Button multiplayerButton = new Button("MULTIPLAYER");
         Button howToPlayButton = new Button("HOW TO PLAY");
@@ -90,6 +103,9 @@ public class Main extends Application {
         layout.getChildren().addAll(startButton,multiplayerButton,howToPlayButton,optionButton,exitButton);
         layout.setLayoutX(WIDTH/2);
         layout.setLayoutY(100);
+        layout.setBackground(new Background(new BackgroundImage(new Image("/images/background.png"),
+                BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT,
+                BackgroundPosition.CENTER, BackgroundSize.DEFAULT)));        
         
         return new Scene(layout,WIDTH,HEIGHT);
     }
@@ -114,8 +130,11 @@ public class Main extends Application {
         
         
     }
-    public void sendStartGameInfo(String roomID){
-        client.sendStartInfo(roomID);
+    public void sendStartGameInfo(String roomName){
+        client.sendStartInfo(roomName);
+    }
+    public void sendRoomInfo(String roomName){
+        client.sendGameRoomInfo(roomName,player.getPlayerNick());
     }
     
     public Scene startGame(){
@@ -153,12 +172,12 @@ public class Main extends Application {
         return new Scene(bord,WIDTH,HEIGHT);
     }
     private Scene multiplayer(){
-        client.start();
         StringBuilder roomNames = new StringBuilder();
         Label rooms = new Label();
+        VBox layout = new VBox(10);
         while(true){
             try{
-            Thread.sleep(1000);
+            Thread.sleep(100);
             }catch(InterruptedException e){
                 e.printStackTrace();
             } 
@@ -167,10 +186,18 @@ public class Main extends Application {
                 roomNames.append("\n");
                 roomNames.append(roomList.get(1).getName());
                 rooms.setText(roomNames.toString());
+                roomViewList.forEach(e -> {
+                    Button temp = new Button(e.getName());
+                    layout.getChildren().add(temp);
+                    temp.setOnMouseClicked(ee -> {
+                        e.mouseClicked(ee);
+                    });
+                    
+                });
                 break;
             }
         }
-        Button room1 = new Button(roomList.get(0).getName());
+        /*Button room1 = new Button(roomList.get(0).getName());
         Button room2 = new Button(roomList.get(1).getName());
         room1.setOnAction(e -> {
             roomList.get(0).addPlayer(player);
@@ -185,8 +212,7 @@ public class Main extends Application {
         room2.setOnAction(e -> {
             roomList.get(1).addPlayer(player);
             //primaryStage.setScene(new Scene(roomList.get(1),WIDTH,HEIGHT));           
-        });
-        VBox layout = new VBox(10);
+        });*/
         Button back = new Button("Back");
         Button start = new Button("Start");
         /*start.setOnAction(e -> {
@@ -203,9 +229,13 @@ public class Main extends Application {
         joinRoom.setOnAction(e -> {
             primaryStage.setScene(joinRoom(e.getSource()));
         });
-        layout.getChildren().addAll(back,start,rooms,room1,room2,createRoom,joinRoom);
+        layout.getChildren().addAll(back,start,rooms,createRoom,joinRoom);
         return new Scene(layout,WIDTH,HEIGHT);
         
+    }
+    
+    public void openRoom(GameRoomView gameRoomView){
+        primaryStage.setScene(new Scene(gameRoomView,WIDTH,HEIGHT));
     }
     
     private Scene createRoom() {
@@ -439,6 +469,7 @@ class Client extends Thread {
     private final String IP = "localhost";
     private final int PORT = 5555;
     private List<GameRoom> roomList;
+    private List<GameRoomView> roomViewList;
     Main main;
     Player player;
     MouseUtil mouseUtil;
@@ -450,13 +481,15 @@ class Client extends Thread {
     static String[] deckInfo = new String[52];
     boolean deckArrived = false;
     boolean roomsArrived = false;
-    Client(GameArea gameArea, Game game,Player player,CountDownLatch latch,List<GameRoom> roomList,Main main) {
+    Client(GameArea gameArea, Game game,Player player,CountDownLatch latch,
+            List<GameRoom> roomList,Main main,List<GameRoomView> roomViewList){
         this.gameArea = gameArea;
         this.game = game;
         this.player = player;
         this.latch = latch;
         this.roomList = roomList;
         this.main = main;
+        this.roomViewList = roomViewList;
         mouseUtil = new MouseUtil(game, gameArea, this,player);
         try{
             Socket socket = new Socket(IP, PORT);
@@ -474,19 +507,19 @@ class Client extends Thread {
         try {
 
             
-            int roomSize = objIn.readInt(); // 1
+            int roomSize = objIn.readInt(); // READ ROOM SIZE ///
             System.out.println("Room Size: "+roomSize);
             
             for(int i = 0 ; i<roomSize;i++){
-                roomList.add((GameRoom) objIn.readObject()); //2
+               GameRoom temp = (GameRoom) objIn.readObject(); // READ ROOMS //
+               roomList.add(temp);
+               roomViewList.add(new GameRoomView(temp, main));
             }
             System.out.println("Room1: "+ roomList.get(0));
             System.out.println("Room2: "+ roomList.get(1));
-            roomsArrived = true;
+            roomsArrived = true;  // MULTIPLAYER CONTINUES //
             
-            String playerName = objIn.readObject().toString(); //4
-            player.setPlayerName(playerName);
-            System.out.println(player.getPlayerName());
+            
             
             while(true){
                 String[] roomInfoIn = (String[]) objIn.readObject(); //3
@@ -511,8 +544,44 @@ class Client extends Thread {
                     System.out.println("game started");
                     break;
                 }
-                else{
-                   // player.getContainingGameRoomView().updateGameRoom();
+                if(roomInfoIn.length == 5){
+                    System.out.println("538");
+                    for(int i = 1 ; i<5 ; i++){
+                        if(player.getContainingRoom().getPlayers2().size() < i){
+                            player.getContainingRoom().addPlayer(roomInfoIn[i]);
+                        }
+                    }
+                    Platform.runLater(
+                    () -> {
+                        player.getContainingGameRoomView().updateGameRoom(roomInfoIn);
+                    }
+                    );
+                    try{
+                        if(player.getPlayerName() == null){
+                            System.out.println("546");
+                            Platform.runLater(
+                    () -> {
+                        player.getContainingGameRoomView().updateGameRoom(roomInfoIn);
+                    }
+                    );
+                        
+                        String playerName = objIn.readObject().toString(); //4
+                        player.setPlayerName(playerName);
+                        System.out.println(player.getPlayerName());
+                        }
+                        
+                    }catch(NullPointerException e){
+                        System.out.println("559");
+                        Platform.runLater(
+                    () -> {
+                        player.getContainingGameRoomView().updateGameRoom(roomInfoIn);
+                    }
+                    );
+                        
+                        String playerName = objIn.readObject().toString(); //4
+                        player.setPlayerName(playerName);
+                        System.out.println(player.getPlayerName());
+                    }
                 }
             }
             
@@ -569,7 +638,7 @@ class Client extends Thread {
         }
 
     }
-    public void sendGameRoomInfo(String player,String gameRoom){
+    public void sendGameRoomInfo(String gameRoom,String player){
         String[] info = new String[2];
         info[0] = gameRoom;
         info[1] = player;

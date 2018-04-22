@@ -1,10 +1,14 @@
 package game;
 
+import javafx.scene.input.MouseEvent;
 import java.io.Serializable;
 import java.util.List;
+import javafx.event.EventHandler;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 
 public class GameRoomView extends Pane implements Serializable{
     private String name;
@@ -15,52 +19,53 @@ public class GameRoomView extends Pane implements Serializable{
     private List<String> players2;
     private int totalPlayers = 0;
     private GameRoom gameRoom;
-    private StringBuilder labelMaker;
-    private Label playerNames;
+    private Label player1 = new Label("EMPTY");
+    private Label player2 = new Label("EMPTY");
+    private Label player3 = new Label("EMPTY");
+    private Label player4 = new Label("EMPTY");
     private Main main;
     private Button start;
     public GameRoomView(GameRoom gameRoom,Main main){
+        VBox layout = new VBox(10);
         start = new Button("START");
         start.setLayoutX(500);
         start.setLayoutY(500);
         //start.setMouseTransparent(true);
-        
-        if(gameRoom.getTotalPlayers()==3){
-            start.setMouseTransparent(false);
-        }
         this.main = main;
         this.gameRoom = gameRoom;
         this.name = gameRoom.getName();
         this.roomID = gameRoom.getRoomID();
         start.setOnAction(e -> {
-            main.sendStartGameInfo("room1");
+            main.sendStartGameInfo(name);
             
         });
-        labelMaker = new StringBuilder();
-        playerNames = new Label();
-        this.players = gameRoom.getPlayers();
-        this.players2 = gameRoom.getPlayers2();
-        players2.forEach(e -> {
-            labelMaker.append(e);
-            labelMaker.append("\n");
-        });
-        playerNames.setText(labelMaker.toString());
-        this.getChildren().addAll(playerNames,start);
+        layout.getChildren().addAll(player1,player2,player3,player4,start);
+        this.getChildren().add(layout);
         
+    }
+
+    public String getName() {
+        return name;
     }
     
     
-    public void updateGameRoom(){
-        StringBuilder temp = new StringBuilder();
-        players2.forEach(e -> {
-            labelMaker.append(e);
-            labelMaker.append("\n");
-        });
-        playerNames.setText(temp.toString());
+    public void updateGameRoom(String[] roomInfoIn){
+        player1.setText(roomInfoIn[1]);
+        player2.setText(roomInfoIn[2]);
+        player3.setText(roomInfoIn[3]);
+        player4.setText(roomInfoIn[4]);
     }
 
     public Main getMain() {
         return main;
     }
+    
+    public void mouseClicked(MouseEvent e) {
+        main.getPlayer().setContainingGameRoomView(this);
+        main.getPlayer().setContainingRoom(gameRoom);
+        main.openRoom(this);
+        main.sendRoomInfo(name);
+    }
+    
     
 }
