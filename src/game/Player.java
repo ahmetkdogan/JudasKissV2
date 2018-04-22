@@ -1,22 +1,47 @@
 
 package game;
 
+import java.io.Serializable;
 
-public class Player {
-    private String playerName;
-    private String playerID;
+
+public class Player implements Serializable{
+    String playerName;
+    String playerNick;
     private String playerIP;
     private boolean playersTurn;
     private int playerScore;
-
-
-    public String getPlayerID() {
-        return playerID;
+    private GameRoom containingRoom;
+    private GameRoomView containingGameRoomView;
+    
+    public Player(String playerNick){
+        this.playerNick = playerNick;
+    }
+    public Player(){
+        
     }
 
-    public void setPlayerID(String playerID) {
-        this.playerID = playerID;
+    public GameRoomView getContainingGameRoomView() {
+        return containingGameRoomView;
     }
+
+    public void setContainingGameRoomView(GameRoomView containingGameRoomView) {
+        this.containingGameRoomView = containingGameRoomView;
+    }
+    public void setContainingRoom(GameRoom containingRoom){
+        this.containingRoom = containingRoom;
+    }
+    public GameRoom getContainingRoom(){
+        return containingRoom;
+    }
+
+    public String getPlayerNick() {
+        return playerNick;
+    }
+
+    public void setPlayerNick(String playerNick) {
+        this.playerNick = playerNick;
+    }
+    
     
     public String getPlayerName() {
         return playerName;

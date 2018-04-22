@@ -137,10 +137,8 @@ public class MouseUtil {
         
         CardPile activePile = game.getPileById(activePileView.getShortID());
         if(checkAllPiles(card,cardView,activePile,activePileView)){
-            System.out.println(destPileView2);
-            System.out.println(client);
             client.sendInfo(card, cardView, activePile, activePileView, destPileView2);
-            
+          
              
             //startTurn(activePile, activePileView, cardView);
             return;

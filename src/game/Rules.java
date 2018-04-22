@@ -102,8 +102,7 @@ public class Rules {
       
        if(destPile.getType() == CardPile.Type.PlayerSlot){
            if(destPile.isEmpty()) {
-               System.out.println("pile not found");
-               return false;
+               return cards.size()>1;
            }
            
            if(!destPile.getCards().isEmpty() && cards.size()<2) return cards.get(0).getRank()==destPile.getTopCard().getRank();
