@@ -23,6 +23,7 @@ import javafx.scene.layout.BackgroundPosition;
 import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.media.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -36,8 +37,8 @@ import view.CardView;
 public class Main extends Application {
 
     private GameArea gameArea = new GameArea(new Image("/images/background.png"));
-    private static final double WIDTH = 1872;
-    private static final double HEIGHT = 936;
+    private static final double WIDTH = 1920; //1872
+    private static final double HEIGHT = 1080; //936
     private Game game = new Game();
     private Player player = new Player("nonick");
     private static int temp = 0;
@@ -59,8 +60,11 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         
         client.start();
+        
+        new MediaPlayer(new Media(new File("asd.mp3").toURI().toString())).play();
         this.primaryStage=primaryStage;
         primaryStage.setScene(mainMenu());
+        primaryStage.setFullScreen(true);
         primaryStage.show();
         primaryStage.setOnCloseRequest(e -> {
                 System.exit(0);
@@ -76,7 +80,6 @@ public class Main extends Application {
     }
     
     public Scene mainMenu(){
-
         Button startButton = new Button("START");
         Button multiplayerButton = new Button("MULTIPLAYER");
         Button howToPlayButton = new Button("HOW TO PLAY");
@@ -101,8 +104,8 @@ public class Main extends Application {
         });
         VBox layout = new VBox(10);
         layout.getChildren().addAll(startButton,multiplayerButton,howToPlayButton,optionButton,exitButton);
-        layout.setLayoutX(WIDTH/2);
-        layout.setLayoutY(100);
+        layout.setLayoutX(0);
+        layout.setLayoutY(0);
         layout.setBackground(new Background(new BackgroundImage(new Image("/images/background.png"),
                 BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT,
                 BackgroundPosition.CENTER, BackgroundSize.DEFAULT)));        
