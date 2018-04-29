@@ -8,15 +8,24 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Observable;
 import java.util.concurrent.CountDownLatch;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.BackgroundPosition;
@@ -27,6 +36,8 @@ import javafx.scene.media.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
 import model.Card;
 import model.CardDeck;
@@ -51,6 +62,9 @@ public class Main extends Application {
     private final int PORT = 5555;
     static List<CardView> cardViewList = new ArrayList<>();
     Stage primaryStage;
+    Media knight = new Media(new File("knight.mp3").toURI().toString());
+    Media metin2 = new Media(new File("metin2.mp3").toURI().toString());
+    MediaPlayer music = new MediaPlayer(knight);
 
     public static void main(String[] args) {
         launch(args);
@@ -60,11 +74,11 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         
         client.start();
-        
-        new MediaPlayer(new Media(new File("asd.mp3").toURI().toString())).play();
+        music.play();
         this.primaryStage=primaryStage;
-        primaryStage.setScene(mainMenu());
+        primaryStage.setScene(new Scene(mainMenu(),WIDTH,HEIGHT));
         primaryStage.setFullScreen(true);
+        //primaryStage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
         primaryStage.show();
         primaryStage.setOnCloseRequest(e -> {
                 System.exit(0);
@@ -79,57 +93,104 @@ public class Main extends Application {
         return player;
     }
     
-    public Scene mainMenu(){
+    public Pane mainMenu(){
+        
         Button startButton = new Button("START");
+        startButton.setLayoutX(726);
+        startButton.setLayoutY(42);
+        startButton.setStyle(
+                "-fx-background-radius: 1em; " +
+                "-fx-max-width: 502px; " +
+                "-fx-max-height: 201px;"
+        );
+        startButton.setPrefSize(502, 201);
+        
         Button multiplayerButton = new Button("MULTIPLAYER");
+        multiplayerButton.setStyle(
+                "-fx-background-radius: 1em; " +
+                "-fx-max-width: 360px; " +
+                "-fx-max-height: 152px;"
+        );
+        multiplayerButton.setPrefSize(360, 152);
+        multiplayerButton.setLayoutX(801);
+        multiplayerButton.setLayoutY(285);
+        
+        
         Button howToPlayButton = new Button("HOW TO PLAY");
+        howToPlayButton.setStyle(
+                "-fx-background-radius: 1em; " +
+                "-fx-max-width: 360px; " +
+                "-fx-max-height: 152px;"
+        ); 
+        howToPlayButton.setPrefSize(360, 152);
+        howToPlayButton.setLayoutX(801);
+        howToPlayButton.setLayoutY(467);
+        
+        
         Button optionButton = new Button("OPTIONS");
+        optionButton.setStyle(
+                "-fx-background-radius: 1em; " +
+                "-fx-max-width: 360px; " +
+                "-fx-max-height: 152px;"
+        );
+        optionButton.setPrefSize(360, 152);
+        optionButton.setLayoutX(801);
+        optionButton.setLayoutY(653);
+        
         Button exitButton = new Button("EXIT");
+        exitButton.setStyle(
+                "-fx-background-radius: 1em; " +
+                "-fx-max-width: 360px; " +
+                "-fx-max-height: 152px;"
+        );
+        exitButton.setPrefSize(360, 152);
+        exitButton.setLayoutX(801);
+        exitButton.setLayoutY(837);
+        
         
         /*startButton.setOnAction(e -> {
             primaryStage.setScene(startGame());
         });
         */
         multiplayerButton.setOnAction(e -> {
-            primaryStage.setScene(multiplayer());
+            primaryStage.getScene().setRoot(multiplayer());
         });
         howToPlayButton.setOnAction(e -> {
-            primaryStage.setScene(howToPlay());
+            primaryStage.getScene().setRoot(howToPlay());
         });
         optionButton.setOnAction(e -> {
-            primaryStage.setScene(options());
+             primaryStage.getScene().setRoot(options());
         });
         exitButton.setOnAction(e -> {
             System.exit(0);
         });
-        VBox layout = new VBox(10);
+        Pane layout = new Pane();
         layout.getChildren().addAll(startButton,multiplayerButton,howToPlayButton,optionButton,exitButton);
         layout.setLayoutX(0);
         layout.setLayoutY(0);
         layout.setBackground(new Background(new BackgroundImage(new Image("/images/background.png"),
                 BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT,
-                BackgroundPosition.CENTER, BackgroundSize.DEFAULT)));        
+                BackgroundPosition.CENTER, BackgroundSize.DEFAULT)));    
         
-        return new Scene(layout,WIDTH,HEIGHT);
+        return layout;
     }
     
     private void inGameSettings(){
-        Stage settingStage = new Stage();
+        Popup popup = new Popup();
         Button resume = new Button("RESUME");
         Button exit = new Button("EXIT");
         resume.setOnAction(e -> {
-            settingStage.close();
+            popup.hide();
         });
         exit.setOnAction(e -> {
-            primaryStage.setScene(mainMenu());
+            popup.hide();
+            primaryStage.getScene().setRoot(mainMenu());
         });
         VBox layout = new VBox(10);
         layout.getChildren().addAll(resume,exit);
-        Scene settingScene = new Scene(layout,600,300);
-        settingStage.setScene(settingScene);
         
-        settingStage.setAlwaysOnTop(true);
-        settingStage.showAndWait();
+        popup.getContent().add(layout);
+        popup.show(primaryStage);
         
         
     }
@@ -140,7 +201,7 @@ public class Main extends Application {
         client.sendGameRoomInfo(roomName,player.getPlayerNick());
     }
     
-    public Scene startGame(){
+    public Pane startGame(){
         Button inGameSettings = new Button("S");
         inGameSettings.setOnAction(e -> {
             inGameSettings();
@@ -157,7 +218,7 @@ public class Main extends Application {
         //latch.countDown();
         while(true){
             try{
-                Thread.sleep(2000);
+                Thread.sleep(10);
             }catch(InterruptedException e){
                 e.printStackTrace();
             }
@@ -171,16 +232,17 @@ public class Main extends Application {
             }
             
         }
+        
 
-        return new Scene(bord,WIDTH,HEIGHT);
+        return bord;
     }
-    private Scene multiplayer(){
+    private Pane multiplayer(){
         StringBuilder roomNames = new StringBuilder();
         Label rooms = new Label();
         VBox layout = new VBox(10);
         while(true){
             try{
-            Thread.sleep(100);
+            Thread.sleep(10);
             }catch(InterruptedException e){
                 e.printStackTrace();
             } 
@@ -222,26 +284,29 @@ public class Main extends Application {
             primaryStage.setScene(startGame());
         });*/
         back.setOnAction(e -> {
-            primaryStage.setScene(mainMenu());
+            primaryStage.getScene().setRoot(mainMenu());
         });
         Button createRoom = new Button("Create Room");
         createRoom.setOnAction(e -> {
-            primaryStage.setScene(createRoom());
+            primaryStage.getScene().setRoot(createRoom());
         });
         Button joinRoom = new Button("Join");
-        joinRoom.setOnAction(e -> {
-            primaryStage.setScene(joinRoom(e.getSource()));
-        });
+        /*joinRoom.setOnAction(e -> {
+            primaryStage.getScene().setRoot(joinRoom(e.getSource()));
+        });*/
         layout.getChildren().addAll(back,start,rooms,createRoom,joinRoom);
-        return new Scene(layout,WIDTH,HEIGHT);
+        layout.setBackground(new Background(new BackgroundImage(new Image("/images/background.png"),
+                BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT,
+                BackgroundPosition.CENTER, BackgroundSize.DEFAULT)));
+        return layout;
         
     }
     
     public void openRoom(GameRoomView gameRoomView){
-        primaryStage.setScene(new Scene(gameRoomView,WIDTH,HEIGHT));
+        primaryStage.getScene().setRoot(gameRoomView);
     }
     
-    private Scene createRoom() {
+    private Pane createRoom() {
         Button back = new Button("Back");
         Label roomName = new Label("Room Name: ");
         TextField roomNameField = new TextField();
@@ -250,25 +315,26 @@ public class Main extends Application {
         Button createButton = new Button("CREATE");
         VBox label = new VBox(10);
         back.setOnAction(e -> {
-            primaryStage.setScene(multiplayer());
+            primaryStage.getScene().setRoot(mainMenu());
         });
         createButton.setOnAction(e -> {
             //GameRoom room = new GameRoom(roomName.getText(),passwordField.getText(),this);
             
         });
         label.getChildren().addAll(back,roomName,roomNameField,passwordField,passwordLabel,createButton);
-        return new Scene(label,WIDTH,HEIGHT);
+        return label;
         
     }
     private Scene joinRoom(Object room){
         return null;
     }
     
-    private Scene howToPlay(){
+    
+    private Pane howToPlay(){
         Label info = new Label("How to play goes here...");
         Button back = new Button("Back");
         back.setOnAction(e -> {
-            primaryStage.setScene(mainMenu());
+            primaryStage.getScene().setRoot(mainMenu());
         });
         Pane pane = new Pane();
         pane.getChildren().addAll(info,back);
@@ -276,14 +342,17 @@ public class Main extends Application {
         back.setLayoutY(0);
         info.setLayoutX(WIDTH/2);
         info.setLayoutY(HEIGHT/2);
-        return new Scene(pane,WIDTH,HEIGHT);
+        pane.setBackground(new Background(new BackgroundImage(new Image("/images/background.png"),
+                BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT,
+                BackgroundPosition.CENTER, BackgroundSize.DEFAULT)));
+        return pane;
         
     }
     
-    private Scene options(){
+    private Pane options(){
         Button back = new Button("Back");
         back.setOnAction(e -> {
-            primaryStage.setScene(mainMenu());
+            primaryStage.getScene().setRoot(mainMenu());
         });
         Label displayName = new Label("Display Name: ");
         TextField displayNameField = new TextField();
@@ -294,19 +363,43 @@ public class Main extends Application {
             displayNameField.setPromptText(player.getPlayerNick());
         });
         Label sound = new Label("Sound: ");
-        Button turnDown = new Button("-");
-        Button turnUp = new Button("+");
-        Label soundLevel = new Label("%71");
+        
+        
+       
+        Slider slider = new Slider();
+        slider.setMin(0);
+        slider.setMax(1.0);
+        slider.valueProperty().addListener(new InvalidationListener() {
+            @Override
+            public void invalidated(javafx.beans.Observable observable) {
+                music.setVolume(slider.getValue());
+            }
+        });
+        slider.setValue(music.getVolume());
+        Label soundLevel = new Label("%" + slider.getValue());
+        soundLevel.textProperty().bind(slider.valueProperty().asString());
+           
+        
         Label fullScreen = new Label("Full Screen: ");
         Button setFullScreen = new Button("ON");
+        setFullScreen.setOnAction(e -> {
+            music.stop();
+            music = new MediaPlayer(metin2);
+            music.setVolume(slider.getValue());
+            music.play();
+        });
         Label cardTheme = new Label("Card Theme");
         Button selectCardTheme = new Button("Classic");
         Label tableBackground = new Label("Table Background");
         Button selectBackground = new Button("Green");
         VBox layout = new VBox(5);
-        layout.getChildren().addAll(back,displayName,displayNameField,setName,sound,turnDown,soundLevel,turnUp,
+        layout.setPadding(new Insets(50,50,50,50));
+        layout.getChildren().addAll(back,displayName,displayNameField,setName,sound,slider,soundLevel,
                 fullScreen,setFullScreen,cardTheme,selectCardTheme,tableBackground,selectBackground);
-        return new Scene(layout,WIDTH,HEIGHT);
+        layout.setBackground(new Background(new BackgroundImage(new Image("/images/background.png"),
+                BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT,
+                BackgroundPosition.CENTER, BackgroundSize.DEFAULT)));
+        return layout;
         
     }
     
@@ -536,7 +629,7 @@ class Client extends Thread {
                     }
                     Platform.runLater(
                     () -> {
-                        main.primaryStage.setScene(main.startGame());
+                        main.primaryStage.getScene().setRoot(main.startGame());
                     }
                     );
                     try{
