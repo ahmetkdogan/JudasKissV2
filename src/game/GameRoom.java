@@ -32,6 +32,10 @@ public class GameRoom implements Serializable {
         totalPlayers++;
         players2.add(player);
     }
+    public void removePlayer(String player){
+        totalPlayers--;
+        players2.remove(player);
+    }
     public void removePlayer(Player player){
         players.remove(player);
     }

@@ -3,8 +3,10 @@ package game;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import model.Card;
 import model.CardDeck;
 import javafx.scene.control.*;
@@ -14,10 +16,21 @@ public class Server {
     private static final int PORT = 5555;
     private static GameRoom room1 = new GameRoom("room1", 1);
     private static GameRoom room2 = new GameRoom("room2", 2);
+    static Map<String,Boolean> room1Players = new HashMap();
+    static Map<String,Boolean> room2Players = new HashMap();
 
     static CardDeck deck = CardDeck.createCardDeck();
 
     public static void main(String[] args) {
+        room1Players.put("player0", false);
+        room1Players.put("player1", false);
+        room1Players.put("player2", false);
+        room1Players.put("player3", false);
+        room2Players.put("player0", false);
+        room2Players.put("player1", false);
+        room2Players.put("player2", false);
+        room2Players.put("player3", false);
+        
 
         try (ServerSocket ss = new ServerSocket(PORT)) {
             deck.shuffle();
@@ -50,6 +63,7 @@ class GameProtocol extends Thread {
     CardDeck deck;
     GameRoom containingRoom;
     Player player;
+    boolean beingPlayed = false;
 
     public GameProtocol(Socket socket, CardDeck deck, GameRoom room1, GameRoom room2) {
         this.socket = socket;
@@ -70,24 +84,43 @@ class GameProtocol extends Thread {
 
             
 
-            objOut.writeInt(2); //1 
-
-            try {
-                //SEND ROOMS//
-                objOut.writeObject(room1);//2
-                objOut.writeObject(room2);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-                        //SEND PLAYER NAME
-                
-            
 
             while (true) {
                 try {
                     roomInfoIn = (String[]) objIn.readObject(); //3       //UPDATE ROOMS
-                    if(roomInfoIn[0].equals("start")) break;
-                    if(roomInfoIn[1].equals("start")){
+                    if (roomInfoIn[0].equals("start")) {
+                        Iterator<Card> deckIterator = deck.iterator();      //SEND DECK
+                        List<String> deckInfoList = new ArrayList<>();
+                        deckIterator.forEachRemaining(card -> {
+                            deckInfoList.add(card.getId());
+                        });
+                        String[] deckInfo = deckInfoList.toArray(new String[52]);
+
+                        sendInfo(deckInfo);
+                        beingPlayed = true;
+                        while (beingPlayed) {
+                            // MOUSE UTIL LOOP //
+                            try {
+                                info = (String[]) objIn.readObject(); //6
+                                if(info[0].equals("stop")) break;
+                                System.out.println("info received");
+                                clients.forEach(e -> e.sendInfo(info));
+                            } catch (EOFException e) {
+                                System.out.println("eofexception");
+                            } catch (ClassNotFoundException e) {
+                                System.out.println("problem in 6");
+                                e.printStackTrace();
+                            }
+
+                        }
+
+                    }
+                    if(roomInfoIn[0].equals("rooms")){
+                        sendInfo("rooms");
+                        objOut.writeObject(room1);
+                        objOut.writeObject(room2);
+                    }
+                    if(roomInfoIn.length>1 &&  roomInfoIn[1].equals("start")){
                         roomInfoOut[1] = "start"; 
                         roomInfoOut[0] = roomInfoIn[0];
                         System.out.println("start");
@@ -95,23 +128,58 @@ class GameProtocol extends Thread {
                             System.out.println("start sent");
                             e.sendObj(roomInfoIn);
                         });
-                        break;
+                        continue;
                     }
-                    containingRoom = roomInfoIn[1].equals("room1") ? room1:room2;
+                    //containingRoom = roomInfoIn[1].equals("room1") ? room1:room2;
                     if (roomInfoIn[0].equals("room1")) {
-
+                        String playerName = "";
+                        for(int i = 0 ; i<4 ; i++){
+                            if(!Server.room1Players.get("player"+i)){
+                                playerName = "player"+i;
+                                Server.room1Players.put("player"+i, true);
+                                break;
+                            } 
+                        }
+                        
+                        room1Size++;
+                        System.out.println(playerName);
+                        
+                        containingRoom = room1;
                         room1.addPlayer(roomInfoIn[1]);
                         room1Protocol.add(this);
                         updateRoomInfo(roomInfoOut,roomInfoIn);
                         room1Protocol.forEach(e -> {
                             e.sendInfo(roomInfoOut);
                         });
-                        String playerName = "player"+room1Size;
                         sendObj(playerName);
-                        room1Size++;
-                        System.out.println(playerName);                        
+                                                
 
-                    } else if (room2.equals(roomInfoIn[0])) {
+                    } else if(roomInfoIn[0].equals("exitroom1")){
+                        System.out.println(roomInfoIn[2]+ " exited the room.");
+                        Server.room1Players.put(roomInfoIn[2], false);
+                        containingRoom = null;
+                        room1.removePlayer(roomInfoIn[1]);
+                        room1Protocol.remove(this);
+                        roomInfoIn[0] = "room1";
+                        updateRoomInfo(roomInfoOut,roomInfoIn);
+                        room1Protocol.forEach(e -> {
+                            e.sendInfo(roomInfoOut);
+                        });
+                        
+                    }
+                    else if(roomInfoIn[0].equals("exitroom2")){
+                        containingRoom = null;
+                        room2.removePlayer(roomInfoIn[1]);
+                        room2Protocol.remove(this);
+                        roomInfoIn[0] = "room2";
+                        updateRoomInfo(roomInfoOut,roomInfoIn);
+                        room2Protocol.forEach(e -> {
+                            e.sendInfo(roomInfoOut);
+                        });
+                        
+                    }
+                    else if (roomInfoIn[0].equals("room2")) {
+                        containingRoom = room2;
                         room2.addPlayer(roomInfoIn[1]);
                         room2Protocol.add(this);
                         updateRoomInfo(roomInfoOut, roomInfoIn);
@@ -131,30 +199,8 @@ class GameProtocol extends Thread {
             
             
 
-            Iterator<Card> deckIterator = deck.iterator();      //SEND DECK
-            List<String> deckInfoList = new ArrayList<>();
-            deckIterator.forEachRemaining(card -> {
-                deckInfoList.add(card.getId());
-            });
-            String[] deckInfo = deckInfoList.toArray(new String[52]); 
-           
-               sendInfo(deckInfo);
-            
-            while (true) {
-                // MOUSE UTIL LOOP //
-               try {
-                    info = (String[]) objIn.readObject(); //6
-                    System.out.println("info received");
-                    clients.forEach(e -> e.sendInfo(info));
-                }catch(EOFException e){
-                    System.out.println("eofexception");
-                } 
-               catch (ClassNotFoundException e) {
-                    System.out.println("problem in 6");
-                    e.printStackTrace();
-                }
 
-            }
+
 
         } catch (IOException e) {
             System.out.println("problem in outer 6");
@@ -171,6 +217,17 @@ class GameProtocol extends Thread {
             e.printStackTrace();
         }
     }
+        
+    public void sendInfo(String info) {
+        String[] infoPackage = new String[1];
+        infoPackage[0] = info;
+        try {
+            objOut.writeObject(infoPackage);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
 
     private void sendObj(Object obj) {              //SEND OBJECT
         try {
@@ -182,15 +239,16 @@ class GameProtocol extends Thread {
     }
     private void updateRoomInfo(String[] roomInfoOut,String[] roomInfoIn){          //UPDATE ROOM INFO
         roomInfoOut[0] = roomInfoIn[0];
+        System.out.println("Room1 Size: "+ room1.getPlayers2().size());
         if(roomInfoOut[0].equals("room1")){
             for(int i = 0 ; i<room1.getPlayers2().size();i++){
                 roomInfoOut[i+1] = room1.getPlayers2().get(i);
             }
         }
-        for(int i = 0 ; i<roomInfoOut.length;i++){
-            if(roomInfoOut[i]==null){
+        for(int i = room1.getPlayers2().size()+1 ; i<5;i++){
+            
                 roomInfoOut[i] = "EMPTY";
-            }
+            
         }
         
     }

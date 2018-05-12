@@ -25,11 +25,13 @@ public class GameRoomView extends Pane implements Serializable{
     private Label player4 = new Label("EMPTY");
     private Main main;
     private Button start;
+    private Button back;
     public GameRoomView(GameRoom gameRoom,Main main){
         VBox layout = new VBox(10);
         start = new Button("START");
         start.setLayoutX(500);
         start.setLayoutY(500);
+        back = new Button("Back");
         //start.setMouseTransparent(true);
         this.main = main;
         this.gameRoom = gameRoom;
@@ -39,7 +41,16 @@ public class GameRoomView extends Pane implements Serializable{
             main.sendStartGameInfo(name);
             
         });
-        layout.getChildren().addAll(player1,player2,player3,player4,start);
+        back.setOnAction(e -> {
+            main.primaryStage.getScene().setRoot(main.multiplayer());
+            main.getPlayer().setContainingGameRoomView(null);
+            main.getPlayer().setContainingRoom(null);
+            gameRoom.getPlayers2().remove(main.getPlayer().playerName);
+            main.sendExitRoomInfo(name);
+            main.getPlayer().setPlayerName(null);
+            
+        });
+        layout.getChildren().addAll(player1,player2,player3,player4,start,back);
         this.getChildren().add(layout);
         
     }

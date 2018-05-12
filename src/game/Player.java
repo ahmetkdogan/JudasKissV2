@@ -19,6 +19,10 @@ public class Player implements Serializable{
     public Player(){
         
     }
+    
+    public String toString(){
+        return "Player Nick: "+ playerNick + ", Player Name: " + playerName;
+    }
 
     public GameRoomView getContainingGameRoomView() {
         return containingGameRoomView;
