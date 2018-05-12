@@ -1,4 +1,4 @@
-package game;
+    package game;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -58,8 +58,6 @@ public class Main extends Application {
     CountDownLatch latch = new CountDownLatch(1);//----/-/-/-/-
     private Client client = new Client(gameArea, game, player,latch,roomList,this,roomViewList);
     private MouseUtil mouseUtil = new MouseUtil(game, gameArea, client, player);
-    private final String IP = "localhost";
-    private final int PORT = 5555;
     static List<CardView> cardViewList = new ArrayList<>();
     Stage primaryStage;
     Media knight = new Media(new File("knight.mp3").toURI().toString());
@@ -200,6 +198,9 @@ public class Main extends Application {
     public void sendRoomInfo(String roomName){
         client.sendGameRoomInfo(roomName,player.getPlayerNick());
     }
+    public void sendExitRoomInfo(String roomName){
+        client.sendExitGameRoomInfo(roomName,player.getPlayerNick(),player.getPlayerName());
+    }
     
     public Pane startGame(){
         Button inGameSettings = new Button("S");
@@ -236,7 +237,8 @@ public class Main extends Application {
 
         return bord;
     }
-    private Pane multiplayer(){
+     Pane multiplayer(){
+        if(!client.roomsArrived) client.sendInfo("rooms");
         StringBuilder roomNames = new StringBuilder();
         Label rooms = new Label();
         VBox layout = new VBox(10);
@@ -523,19 +525,19 @@ public class Main extends Application {
         else if(player.getPlayerName().equals("player1")){
             for (CardPileView pileView : gameArea.getHand1PileViews()) {
             pileView.getTopCardView().flip();
-            pileView.getTopCardView().setMouseTransparent(false);
+           // pileView.getTopCardView().setMouseTransparent(false);
         }
         }
         else if(player.getPlayerName().equals("player2")){
             for (CardPileView pileView : gameArea.getHand2PileViews()) {
             pileView.getTopCardView().flip();
-            pileView.getTopCardView().setMouseTransparent(false);
+            //pileView.getTopCardView().setMouseTransparent(false);
         }
         }
         else if(player.getPlayerName().equals("player3")){
             for (CardPileView pileView : gameArea.getHand3PileViews()) {
             pileView.getTopCardView().flip();
-            pileView.getTopCardView().setMouseTransparent(false);
+           // pileView.getTopCardView().setMouseTransparent(false);
         }
         }
 
@@ -577,6 +579,8 @@ class Client extends Thread {
     static String[] deckInfo = new String[52];
     boolean deckArrived = false;
     boolean roomsArrived = false;
+    int roomSize = 0;
+    boolean beingPlayed = false;
     Client(GameArea gameArea, Game game,Player player,CountDownLatch latch,
             List<GameRoom> roomList,Main main,List<GameRoomView> roomViewList){
         this.gameArea = gameArea;
@@ -603,27 +607,29 @@ class Client extends Thread {
         try {
 
             
-            int roomSize = objIn.readInt(); // READ ROOM SIZE ///
-            System.out.println("Room Size: "+roomSize);
             
-            for(int i = 0 ; i<roomSize;i++){
-               GameRoom temp = (GameRoom) objIn.readObject(); // READ ROOMS //
-               roomList.add(temp);
-               roomViewList.add(new GameRoomView(temp, main));
+            try(final DatagramSocket socket = new DatagramSocket()){
+             socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
+                System.out.println(socket.getLocalAddress().getHostAddress());
             }
-            System.out.println("Room1: "+ roomList.get(0));
-            System.out.println("Room2: "+ roomList.get(1));
-            roomsArrived = true;  // MULTIPLAYER CONTINUES //
-            
-            
             
             while(true){
                 String[] roomInfoIn = (String[]) objIn.readObject(); //3
-                System.out.println("Room info: "+roomInfoIn[1]);
-                if(roomInfoIn[1].equals("start")){
+                if(roomInfoIn[0].equals("rooms")){
+                    for(int i = 0 ; i<2;i++){
+                        GameRoom temp = (GameRoom) objIn.readObject(); // READ ROOMS //
+                        roomList.add(temp);
+                        roomViewList.add(new GameRoomView(temp, main));
+                    }
+                    roomsArrived = true; //MULTIPLAYER CONTINUES//
+                }
+                if(roomInfoIn[0].equals("room1") || roomInfoIn[0].equals("room2")){
+                    
+                }
+                if(roomInfoIn.length > 1 && roomInfoIn[1].equals("start")){
                     System.out.println("start");
                     System.out.println(player.getPlayerName());
-                    if(!player.getPlayerName().equals("player0")){
+                    if(!player.getPlayerName().equals("player5")){
                         System.out.println("yeter");
                         sendStartInfo("start");
                     }
@@ -638,46 +644,35 @@ class Client extends Thread {
                         e.printStackTrace();
                     }
                     System.out.println("game started");
-                    break;
+                    deckInfo = (String[]) objIn.readObject(); //5
+                    deckArrived = true;
+                    // ADD SLEEP HERE//
+                    beingPlayed = true;
+                    while (beingPlayed) {
+                        //sendInfo tru mouseUtil
+                        processInfo(); //6
+                    }
                 }
                 if(roomInfoIn.length == 5){
                     System.out.println("538");
-                    for(int i = 1 ; i<5 ; i++){
+                    /*for(int i = 1 ; i<5 ; i++){
                         if(player.getContainingRoom().getPlayers2().size() < i){
                             player.getContainingRoom().addPlayer(roomInfoIn[i]);
                         }
+                    }*/
+                    String playerName = "";
+                    if(player.getPlayerName() == null){
+                        playerName = objIn.readObject().toString(); //4
+                        player.setPlayerName(playerName);
                     }
+                        
+                        System.out.println("playerName: "+player.getPlayerName());
                     Platform.runLater(
                     () -> {
                         player.getContainingGameRoomView().updateGameRoom(roomInfoIn);
                     }
                     );
-                    try{
-                        if(player.getPlayerName() == null){
-                            System.out.println("546");
-                            Platform.runLater(
-                    () -> {
-                        player.getContainingGameRoomView().updateGameRoom(roomInfoIn);
-                    }
-                    );
-                        
-                        String playerName = objIn.readObject().toString(); //4
-                        player.setPlayerName(playerName);
-                        System.out.println(player.getPlayerName());
-                        }
-                        
-                    }catch(NullPointerException e){
-                        System.out.println("559");
-                        Platform.runLater(
-                    () -> {
-                        player.getContainingGameRoomView().updateGameRoom(roomInfoIn);
-                    }
-                    );
-                        
-                        String playerName = objIn.readObject().toString(); //4
-                        player.setPlayerName(playerName);
-                        System.out.println(player.getPlayerName());
-                    }
+                    
                 }
             }
             
@@ -690,13 +685,7 @@ class Client extends Thread {
             
             
             
-            deckInfo = (String[]) objIn.readObject(); //5
-            deckArrived = true;
-            // ADD SLEEP HERE//
-            while (true) {
-                //sendInfo tru mouseUtil
-                processInfo(); //6
-            }
+
 
         } catch (IOException e) {
             System.out.println("problem in while process info ioex");
@@ -734,10 +723,20 @@ class Client extends Thread {
         }
 
     }
-    public void sendGameRoomInfo(String gameRoom,String player){
+    public void sendInfo(String info){
+        String[] infoPackage = new String[1];
+        infoPackage[0] = info;
+        try{
+            objOut.writeObject(infoPackage);
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+        
+    }
+    public void sendGameRoomInfo(String gameRoom,String playerNick){
         String[] info = new String[2];
         info[0] = gameRoom;
-        info[1] = player;
+        info[1] = playerNick;
         try{
             objOut.writeObject(info);
             objOut.flush();
@@ -746,12 +745,25 @@ class Client extends Thread {
             e.printStackTrace();
         }
     }
+    public void sendExitGameRoomInfo(String gameRoom,String playerNick,String playerName){
+        String[] info = new String[3];
+        info[0] = "exit"+gameRoom;
+        info[1] = playerNick;
+        info[2] = playerName;
+        try{
+            objOut.writeObject(info);
+            objOut.flush();
+        }catch(IOException e){
+            System.out.println("Problem in send exit game room info");
+            e.printStackTrace();
+        }
+    }
 
     public void processInfo() {
         String[] info = new String[5];
         System.out.println("processing info");
         try {
-            if ((info = (String[]) objIn.readObject()) != null) {
+            if ((info = (String[]) objIn.readObject()) != null && info.length == 5) {
                 System.out.println("Info Received");
             }
         } catch (IOException e) {
