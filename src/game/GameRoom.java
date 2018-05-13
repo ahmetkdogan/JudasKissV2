@@ -38,6 +38,7 @@ public class GameRoom implements Serializable {
     }
     public void removePlayer(Player player){
         players.remove(player);
+        totalPlayers--;
     }
 
     public String getName() {

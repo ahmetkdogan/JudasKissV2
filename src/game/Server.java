@@ -141,30 +141,31 @@ class GameProtocol extends Thread {
                             } 
                         }
                         
-                        room1Size++;
+                        //room1Size++;
                         System.out.println(playerName);
                         
                         containingRoom = room1;
                         room1.addPlayer(roomInfoIn[1]);
                         room1Protocol.add(this);
-                        updateRoomInfo(roomInfoOut,roomInfoIn);
+                        //updateRoomInfo(roomInfoOut,roomInfoIn);
                         room1Protocol.forEach(e -> {
-                            e.sendInfo(roomInfoOut);
+                            e.sendInfo(updateRoomInfo(roomInfoOut,roomInfoIn));
                         });
                         sendObj(playerName);
                                                 
 
                     } else if(roomInfoIn[0].equals("exitroom1")){
-                        System.out.println(roomInfoIn[2]+ " exited the room.");
+                        System.out.println(roomInfoIn[1]+roomInfoIn[2]+ " exited the room.");
                         Server.room1Players.put(roomInfoIn[2], false);
                         containingRoom = null;
                         room1.removePlayer(roomInfoIn[1]);
-                        room1Protocol.remove(this);
                         roomInfoIn[0] = "room1";
-                        updateRoomInfo(roomInfoOut,roomInfoIn);
+                        //updateRoomInfo(roomInfoOut,roomInfoIn);
+                        room1Protocol.remove(this);
                         room1Protocol.forEach(e -> {
-                            e.sendInfo(roomInfoOut);
+                            e.sendInfo(updateRoomInfo(roomInfoOut,roomInfoIn));
                         });
+                        
                         
                     }
                     else if(roomInfoIn[0].equals("exitroom2")){
@@ -237,7 +238,7 @@ class GameProtocol extends Thread {
             e.printStackTrace();
         }
     }
-    private void updateRoomInfo(String[] roomInfoOut,String[] roomInfoIn){          //UPDATE ROOM INFO
+    private String[] updateRoomInfo(String[] roomInfoOut,String[] roomInfoIn){          //UPDATE ROOM INFO
         roomInfoOut[0] = roomInfoIn[0];
         System.out.println("Room1 Size: "+ room1.getPlayers2().size());
         if(roomInfoOut[0].equals("room1")){
@@ -250,6 +251,10 @@ class GameProtocol extends Thread {
                 roomInfoOut[i] = "EMPTY";
             
         }
+        for(String a : roomInfoOut){
+            System.out.print(a + ", ");
+        }
+        return roomInfoOut;
         
     }
 }

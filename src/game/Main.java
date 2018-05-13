@@ -662,11 +662,15 @@ class Client extends Thread {
                     }*/
                     String playerName = "";
                     if(player.getPlayerName() == null){
+                        System.out.println("occ");
                         playerName = objIn.readObject().toString(); //4
                         player.setPlayerName(playerName);
                     }
                         
                         System.out.println("playerName: "+player.getPlayerName());
+                    for (String a : roomInfoIn) {
+                        System.out.print(a + ", ");
+                    }
                     Platform.runLater(
                     () -> {
                         player.getContainingGameRoomView().updateGameRoom(roomInfoIn);

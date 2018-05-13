@@ -45,7 +45,7 @@ public class GameRoomView extends Pane implements Serializable{
             main.primaryStage.getScene().setRoot(main.multiplayer());
             main.getPlayer().setContainingGameRoomView(null);
             main.getPlayer().setContainingRoom(null);
-            gameRoom.getPlayers2().remove(main.getPlayer().playerName);
+            //gameRoom.getPlayers2().remove(main.getPlayer().playerName);
             main.sendExitRoomInfo(name);
             main.getPlayer().setPlayerName(null);
             
