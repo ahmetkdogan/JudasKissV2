@@ -4,9 +4,13 @@ import javafx.scene.input.MouseEvent;
 import java.io.Serializable;
 import java.util.List;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
@@ -26,12 +30,27 @@ public class GameRoomView extends Pane implements Serializable{
     private Main main;
     private Button start;
     private Button back;
+    private TextArea ta;
+    private TextField tf;
     public GameRoomView(GameRoom gameRoom,Main main){
-        VBox layout = new VBox(10);
+        ta = new TextArea();
+        tf = new TextField();
+        ta.setEditable(true);
+        BorderPane layout = new BorderPane();
+        layout.setPadding(new Insets(10,10,10,10));
+        VBox labels = new VBox(10);
+        layout.setRight(labels);
+        layout.setCenter(ta);
+        layout.setBottom(tf);
+        tf.setOnAction(e -> {
+            main.sendMsg(tf.getText().toString());
+            tf.setText("");
+        });
         start = new Button("START");
         start.setLayoutX(500);
         start.setLayoutY(500);
         back = new Button("Back");
+        layout.setTop(back);
         //start.setMouseTransparent(true);
         this.main = main;
         this.gameRoom = gameRoom;
@@ -47,10 +66,12 @@ public class GameRoomView extends Pane implements Serializable{
             main.getPlayer().setContainingRoom(null);
             //gameRoom.getPlayers2().remove(main.getPlayer().playerName);
             main.sendExitRoomInfo(name);
+            main.sendMsg("left");
             main.getPlayer().setPlayerName(null);
+            ta.clear();
             
         });
-        layout.getChildren().addAll(player1,player2,player3,player4,start,back);
+        labels.getChildren().addAll(player1,player2,player3,player4,start);
         this.getChildren().add(layout);
         
     }
@@ -76,6 +97,11 @@ public class GameRoomView extends Pane implements Serializable{
         main.getPlayer().setContainingRoom(gameRoom);
         main.openRoom(this);
         main.sendRoomInfo(name);
+        main.sendMsg("joined");
+    }
+    
+    public void addMsg(String msg){
+        ta.appendText(msg + "\n");
     }
     
     

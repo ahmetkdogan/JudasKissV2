@@ -102,6 +102,21 @@ class GameProtocol extends Thread {
                             // MOUSE UTIL LOOP //
                             try {
                                 info = (String[]) objIn.readObject(); //6
+                                if (info[0].equals("message")) {
+                                    String msg = info[2] + ": " + info[1];
+                                    if (info[1].equals("left")) {
+                                        msg = info[2] + " left the room.";
+                                    }
+                                    if (info[1].equals("joined")) {
+                                        msg = info[2] + " joined the room.";
+                                    }
+                                    info[1] = msg;
+
+                                    room1Protocol.forEach(e -> {
+                                        e.sendInfo(info);
+                                    });
+                                    continue;
+                                }
                                 if(info[0].equals("stop")) break;
                                 System.out.println("info received");
                                 clients.forEach(e -> e.sendInfo(info));
@@ -149,7 +164,7 @@ class GameProtocol extends Thread {
                         room1Protocol.add(this);
                         //updateRoomInfo(roomInfoOut,roomInfoIn);
                         room1Protocol.forEach(e -> {
-                            e.sendInfo(updateRoomInfo(roomInfoOut,roomInfoIn));
+                            e.sendInfo(updateRoomInfo(roomInfoIn));
                         });
                         sendObj(playerName);
                                                 
@@ -163,7 +178,7 @@ class GameProtocol extends Thread {
                         //updateRoomInfo(roomInfoOut,roomInfoIn);
                         room1Protocol.remove(this);
                         room1Protocol.forEach(e -> {
-                            e.sendInfo(updateRoomInfo(roomInfoOut,roomInfoIn));
+                            e.sendInfo(updateRoomInfo(roomInfoIn));
                         });
                         
                         
@@ -173,7 +188,7 @@ class GameProtocol extends Thread {
                         room2.removePlayer(roomInfoIn[1]);
                         room2Protocol.remove(this);
                         roomInfoIn[0] = "room2";
-                        updateRoomInfo(roomInfoOut,roomInfoIn);
+                        updateRoomInfo(roomInfoIn);
                         room2Protocol.forEach(e -> {
                             e.sendInfo(roomInfoOut);
                         });
@@ -183,7 +198,7 @@ class GameProtocol extends Thread {
                         containingRoom = room2;
                         room2.addPlayer(roomInfoIn[1]);
                         room2Protocol.add(this);
-                        updateRoomInfo(roomInfoOut, roomInfoIn);
+                        updateRoomInfo(roomInfoIn);
                         room2Protocol.forEach(e -> {
                             e.sendInfo(roomInfoOut);
                         });
@@ -191,6 +206,20 @@ class GameProtocol extends Thread {
                         sendObj(playerName);
                         room2Size++;
                         System.out.println(playerName);                        
+                    }
+                    if(roomInfoIn[0].equals("message")){
+                        String msg = roomInfoIn[2]+ ": " + roomInfoIn[1];
+                        if(roomInfoIn[1].equals("left")){
+                            msg = roomInfoIn[2]+ " left the room.";
+                        }
+                        if(roomInfoIn[1].equals("joined")){
+                            msg = roomInfoIn[2]+ " joined the room.";
+                        }
+                        roomInfoIn[1] = msg;
+                        
+                        room1Protocol.forEach(e -> {
+                                e.sendInfo(roomInfoIn);
+                            });
                     }
 
                 } catch (ClassNotFoundException e) {
@@ -210,7 +239,7 @@ class GameProtocol extends Thread {
 
     }
 
-    private void sendInfo(String[] info) {      //SEND INFO
+    private void sendInfo(String[] info) {    
         try {
             objOut.writeObject(info);
         } catch (IOException e) {
@@ -238,23 +267,24 @@ class GameProtocol extends Thread {
             e.printStackTrace();
         }
     }
-    private String[] updateRoomInfo(String[] roomInfoOut,String[] roomInfoIn){          //UPDATE ROOM INFO
-        roomInfoOut[0] = roomInfoIn[0];
+    private String[] updateRoomInfo(String[] roomInfoIn){          //UPDATE ROOM INFO
+        String[] temp = new String[5];
+        temp[0] = roomInfoIn[0];
         System.out.println("Room1 Size: "+ room1.getPlayers2().size());
-        if(roomInfoOut[0].equals("room1")){
+        if(temp[0].equals("room1")){
             for(int i = 0 ; i<room1.getPlayers2().size();i++){
-                roomInfoOut[i+1] = room1.getPlayers2().get(i);
+                temp[i+1] = room1.getPlayers2().get(i);
             }
         }
         for(int i = room1.getPlayers2().size()+1 ; i<5;i++){
             
-                roomInfoOut[i] = "EMPTY";
+                temp[i] = "EMPTY";
             
         }
-        for(String a : roomInfoOut){
+        for(String a : temp){
             System.out.print(a + ", ");
         }
-        return roomInfoOut;
+        return temp;
         
     }
 }

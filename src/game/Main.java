@@ -47,7 +47,7 @@ import view.CardView;
 
 public class Main extends Application {
 
-    private GameArea gameArea = new GameArea(new Image("/images/background.png"));
+    private GameArea gameArea = new GameArea(new Image("/images/background.png"),this);
     private static final double WIDTH = 1920; //1872
     private static final double HEIGHT = 1080; //936
     private Game game = new Game();
@@ -200,6 +200,9 @@ public class Main extends Application {
     }
     public void sendExitRoomInfo(String roomName){
         client.sendExitGameRoomInfo(roomName,player.getPlayerNick(),player.getPlayerName());
+    }
+    public void sendMsg(String msg){
+        client.sendMsg(msg,player.getPlayerNick());
     }
     
     public Pane startGame(){
@@ -623,9 +626,6 @@ class Client extends Thread {
                     }
                     roomsArrived = true; //MULTIPLAYER CONTINUES//
                 }
-                if(roomInfoIn[0].equals("room1") || roomInfoIn[0].equals("room2")){
-                    
-                }
                 if(roomInfoIn.length > 1 && roomInfoIn[1].equals("start")){
                     System.out.println("start");
                     System.out.println(player.getPlayerName());
@@ -677,6 +677,13 @@ class Client extends Thread {
                     }
                     );
                     
+                }
+                if(roomInfoIn[0].equals("message")){
+                    Platform.runLater(
+                    () -> {
+                        player.getContainingGameRoomView().addMsg(roomInfoIn[1]);
+                    }
+                    );
                 }
             }
             
@@ -737,6 +744,17 @@ class Client extends Thread {
         }
         
     }
+    public void sendMsg(String msg,String nick){
+        String[] msgPackage = new String[3];
+        msgPackage[0] = "message";
+        msgPackage[1] = msg;
+        msgPackage[2] = nick;
+        try{
+            objOut.writeObject(msgPackage);
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
     public void sendGameRoomInfo(String gameRoom,String playerNick){
         String[] info = new String[2];
         info[0] = gameRoom;
@@ -767,8 +785,7 @@ class Client extends Thread {
         String[] info = new String[5];
         System.out.println("processing info");
         try {
-            if ((info = (String[]) objIn.readObject()) != null && info.length == 5) {
-                System.out.println("Info Received");
+            if ((info = (String[]) objIn.readObject()) != null) {
             }
         } catch (IOException e) {
             System.out.println("problem in process info ioex");
@@ -777,7 +794,15 @@ class Client extends Thread {
             System.out.println("problem in process info cnfe");
             e.printStackTrace();
         }
-        System.out.println(info[0]);
+        if(info[0].equals("message")){
+            String msg = info[1];
+            Platform.runLater(
+                    () -> {
+                        gameArea.addMsg(msg);
+                    }
+            );
+            return;
+        }
         Card card = game.getDeck().getById(info[0]);
         CardView cardView = Main.getCardViewById(info[1]);
         CardPile sourcePile = game.getPileById(info[2]);

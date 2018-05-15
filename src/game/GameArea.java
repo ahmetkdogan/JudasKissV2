@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.stream.IntStream;
 import javafx.collections.FXCollections;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Background;
@@ -14,6 +16,7 @@ import javafx.scene.layout.BackgroundPosition;
 import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import view.CardPileView;
 import view.CardView;
@@ -31,10 +34,12 @@ public class GameArea extends Pane{
     private List<CardPileView> hand3PileViews;
     private CardPileView mainPileView;
     private CardPileView deckPileView;
-    public Label turn;
+    private TextArea ta;
+    private TextField tf;
+    private Main main;
     
     public void setTurn(String a){
-        turn.setText(a);
+        addMsg(a);
     }
     public GameArea(){
         this.slotPileViews = FXCollections.observableArrayList();
@@ -47,8 +52,9 @@ public class GameArea extends Pane{
         this.deckPileView = new CardPileView(2,"D");
         initGameArea();
     }
-    public GameArea(Image tableBackground){
+    public GameArea(Image tableBackground,Main main){
         this();
+        this.main = main;
         setTableauBackground(tableBackground);
     }
     
@@ -61,10 +67,26 @@ public class GameArea extends Pane{
         buildHand3Piles();
         buildMainPile();
         buildDeckPile();
-        turn = new Label("Player1's Turn");
-        getChildren().add(turn);
-        turn.setLayoutX(500);
-        turn.setLayoutY(500);
+        chatArea();
+    }
+    
+    public void chatArea(){
+        ta = new TextArea();
+        ta.setPrefSize(450, 200);
+        tf = new TextField();
+        tf.setPrefWidth(450);
+        tf.setOnAction(e -> {
+            main.sendMsg(tf.getText().toString());
+            tf.setText("");
+        });
+        VBox chatLayout = new VBox(5);
+        chatLayout.getChildren().addAll(ta,tf);
+        chatLayout.setLayoutX(200);
+        chatLayout.setLayoutY(500);
+        this.getChildren().add(chatLayout);
+    }
+    public void addMsg(String msg){
+        ta.appendText(msg + "\n");
     }
 
     public CardPileView getDeckPileView() {
