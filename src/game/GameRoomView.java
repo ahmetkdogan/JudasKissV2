@@ -10,7 +10,14 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
@@ -23,6 +30,7 @@ public class GameRoomView extends Pane implements Serializable{
     private List<String> players2;
     private int totalPlayers = 0;
     private GameRoom gameRoom;
+    private Label playerNames = new Label("PLAYERS");
     private Label player1 = new Label("EMPTY");
     private Label player2 = new Label("EMPTY");
     private Label player3 = new Label("EMPTY");
@@ -32,25 +40,30 @@ public class GameRoomView extends Pane implements Serializable{
     private Button back;
     private TextArea ta;
     private TextField tf;
+    String style = getClass().getResource("fxml.css").toExternalForm();
+    
     public GameRoomView(GameRoom gameRoom,Main main){
+        HBox layout = new HBox(40);
+        layout.setLayoutX(305);
+        layout.setLayoutY(257);
         ta = new TextArea();
         tf = new TextField();
         ta.setEditable(true);
-        BorderPane layout = new BorderPane();
-        layout.setPadding(new Insets(10,10,10,10));
+        this.getStylesheets().add(style);
+        this.setBackground(new Background(new BackgroundImage(new Image("/images/background.jpg"),
+                BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT,
+                BackgroundPosition.CENTER, BackgroundSize.DEFAULT))); 
         VBox labels = new VBox(10);
-        layout.setRight(labels);
-        layout.setCenter(ta);
-        layout.setBottom(tf);
+        VBox chat = new VBox(5);
+        chat.getChildren().addAll(ta,tf);
         tf.setOnAction(e -> {
             main.sendMsg(tf.getText().toString());
             tf.setText("");
         });
         start = new Button("START");
-        start.setLayoutX(500);
-        start.setLayoutY(500);
         back = new Button("Back");
-        layout.setTop(back);
+        back.setLayoutX(320);
+        back.setLayoutY(747);
         //start.setMouseTransparent(true);
         this.main = main;
         this.gameRoom = gameRoom;
@@ -71,8 +84,9 @@ public class GameRoomView extends Pane implements Serializable{
             ta.clear();
             
         });
-        labels.getChildren().addAll(player1,player2,player3,player4,start);
-        this.getChildren().add(layout);
+        labels.getChildren().addAll(playerNames,player1,player2,player3,player4,start);
+        layout.getChildren().addAll(chat,labels);
+        this.getChildren().addAll(layout,back);
         
     }
 

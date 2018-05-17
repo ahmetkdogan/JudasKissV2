@@ -3,6 +3,7 @@ package game;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -28,6 +29,10 @@ public class GameArea extends Pane{
     List<CardView> cardViewList = new ArrayList<>();
     private List<CardPileView> slotPileViews;
     private List<CardPileView> playerSlotPileViews;
+    private Label player0Point;
+    private Label player1Point;
+    private Label player2Point;
+    private Label player3Point;
     private List<CardPileView> hand0PileViews;
     private List<CardPileView> hand1PileViews;
     private List<CardPileView> hand2PileViews;
@@ -48,6 +53,10 @@ public class GameArea extends Pane{
         this.hand1PileViews = FXCollections.observableArrayList();
         this.hand2PileViews = FXCollections.observableArrayList();
         this.hand3PileViews = FXCollections.observableArrayList();
+        this.player0Point = new Label("0");
+        this.player1Point = new Label("0");
+        this.player2Point = new Label("0");
+        this.player3Point = new Label("0");
         this.mainPileView = new CardPileView(2,"M");
         this.deckPileView = new CardPileView(2,"D");
         initGameArea();
@@ -61,6 +70,7 @@ public class GameArea extends Pane{
     private void initGameArea(){
         buildSlotPiles();
         buildPlayerSlotPiles();
+        buildPlayerPoints();
         buildHand0Piles();
         buildHand1Piles();
         buildHand2Piles();
@@ -68,6 +78,37 @@ public class GameArea extends Pane{
         buildMainPile();
         buildDeckPile();
         chatArea();
+    }
+    public void buildPlayerPoints(){
+        player0Point.setLayoutX(900);
+        player0Point.setLayoutY(650);
+        getChildren().add(player0Point);
+        
+        player1Point.setLayoutX(1548);
+        player1Point.setLayoutY(394);
+        getChildren().add(player1Point);
+        
+        player2Point.setLayoutX(900);
+        player2Point.setLayoutY(170);
+        getChildren().add(player2Point);
+        
+        player3Point.setLayoutX(180);
+        player3Point.setLayoutY(394);
+        getChildren().add(player3Point);
+        
+//        playerPoints.get(3).setLayoutX(180);
+//        playerPoints.get(3).setLayoutY(394);
+//        getChildren().add(playerPoints.get(3));
+
+    }
+    
+    public void updatePlayerPoint(){
+           
+                player0Point.setText(playerSlotPileViews.get(0).getTotalPoint()+"");
+                player1Point.setText(playerSlotPileViews.get(1).getTotalPoint()+"");
+                player2Point.setText(playerSlotPileViews.get(2).getTotalPoint()+"");
+                player3Point.setText(playerSlotPileViews.get(3).getTotalPoint()+"");
+       
     }
     
     public void chatArea(){
@@ -81,8 +122,8 @@ public class GameArea extends Pane{
         });
         VBox chatLayout = new VBox(5);
         chatLayout.getChildren().addAll(ta,tf);
-        chatLayout.setLayoutX(200);
-        chatLayout.setLayoutY(500);
+        chatLayout.setLayoutX(72);
+        chatLayout.setLayoutY(800);
         this.getChildren().add(chatLayout);
     }
     public void addMsg(String msg){

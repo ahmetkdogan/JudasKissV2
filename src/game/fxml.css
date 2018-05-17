@@ -1,0 +1,30 @@
+/*
+ * Empty Stylesheet file.
+ */
+
+.mainFxmlClass {
+
+}
+
+    
+.slider .fill {
+ -fx-background-color: #00828b;
+ -fx-padding: 0.333333em; 
+}
+.slider .fill:hover {
+ -fx-background-color: #219297;
+}
+.button {
+  -fx-background-color: #585858;
+  -fx-text-fill: white;
+  -fx-border-color: black;
+  -fx-pref-width: 200px;
+  -fx-pref-height: 58px;
+}
+
+.button:hover {
+  -fx-background-color: #bec0c2;
+}
+.label {
+    -fx-text-fill: white;
+}

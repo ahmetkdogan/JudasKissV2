@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
 import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
@@ -47,7 +49,7 @@ import view.CardView;
 
 public class Main extends Application {
 
-    private GameArea gameArea = new GameArea(new Image("/images/background.png"),this);
+    private GameArea gameArea = new GameArea(new Image("/images/background2.jpg"),this);
     private static final double WIDTH = 1920; //1872
     private static final double HEIGHT = 1080; //936
     private Game game = new Game();
@@ -63,6 +65,7 @@ public class Main extends Application {
     Media knight = new Media(new File("knight.mp3").toURI().toString());
     Media metin2 = new Media(new File("metin2.mp3").toURI().toString());
     MediaPlayer music = new MediaPlayer(knight);
+    String style = getClass().getResource("fxml.css").toExternalForm();
 
     public static void main(String[] args) {
         launch(args);
@@ -92,58 +95,19 @@ public class Main extends Application {
     }
     
     public Pane mainMenu(){
-        
+        VBox buttons = new VBox(30);
+        buttons.setLayoutX(860);
+        buttons.setLayoutY(300);
+        buttons.getStylesheets().add(style);
         Button startButton = new Button("START");
-        startButton.setLayoutX(726);
-        startButton.setLayoutY(42);
-        startButton.setStyle(
-                "-fx-background-radius: 1em; " +
-                "-fx-max-width: 502px; " +
-                "-fx-max-height: 201px;"
-        );
-        startButton.setPrefSize(502, 201);
         
         Button multiplayerButton = new Button("MULTIPLAYER");
-        multiplayerButton.setStyle(
-                "-fx-background-radius: 1em; " +
-                "-fx-max-width: 360px; " +
-                "-fx-max-height: 152px;"
-        );
-        multiplayerButton.setPrefSize(360, 152);
-        multiplayerButton.setLayoutX(801);
-        multiplayerButton.setLayoutY(285);
-        
         
         Button howToPlayButton = new Button("HOW TO PLAY");
-        howToPlayButton.setStyle(
-                "-fx-background-radius: 1em; " +
-                "-fx-max-width: 360px; " +
-                "-fx-max-height: 152px;"
-        ); 
-        howToPlayButton.setPrefSize(360, 152);
-        howToPlayButton.setLayoutX(801);
-        howToPlayButton.setLayoutY(467);
-        
         
         Button optionButton = new Button("OPTIONS");
-        optionButton.setStyle(
-                "-fx-background-radius: 1em; " +
-                "-fx-max-width: 360px; " +
-                "-fx-max-height: 152px;"
-        );
-        optionButton.setPrefSize(360, 152);
-        optionButton.setLayoutX(801);
-        optionButton.setLayoutY(653);
         
         Button exitButton = new Button("EXIT");
-        exitButton.setStyle(
-                "-fx-background-radius: 1em; " +
-                "-fx-max-width: 360px; " +
-                "-fx-max-height: 152px;"
-        );
-        exitButton.setPrefSize(360, 152);
-        exitButton.setLayoutX(801);
-        exitButton.setLayoutY(837);
         
         
         /*startButton.setOnAction(e -> {
@@ -163,10 +127,11 @@ public class Main extends Application {
             System.exit(0);
         });
         Pane layout = new Pane();
-        layout.getChildren().addAll(startButton,multiplayerButton,howToPlayButton,optionButton,exitButton);
+        buttons.getChildren().addAll(startButton,multiplayerButton,howToPlayButton,optionButton,exitButton);
+        layout.getChildren().add(buttons);
         layout.setLayoutX(0);
         layout.setLayoutY(0);
-        layout.setBackground(new Background(new BackgroundImage(new Image("/images/background.png"),
+        layout.setBackground(new Background(new BackgroundImage(new Image("/images/background.jpg"),
                 BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT,
                 BackgroundPosition.CENTER, BackgroundSize.DEFAULT)));    
         
@@ -244,7 +209,11 @@ public class Main extends Application {
         if(!client.roomsArrived) client.sendInfo("rooms");
         StringBuilder roomNames = new StringBuilder();
         Label rooms = new Label();
-        VBox layout = new VBox(10);
+        Pane layout = new Pane();
+        VBox buttons = new VBox(10);
+        buttons.getStylesheets().add(style);
+        buttons.setLayoutX(860);
+        buttons.setLayoutY(300);
         while(true){
             try{
             Thread.sleep(10);
@@ -257,8 +226,8 @@ public class Main extends Application {
                 roomNames.append(roomList.get(1).getName());
                 rooms.setText(roomNames.toString());
                 roomViewList.forEach(e -> {
-                    Button temp = new Button(e.getName());
-                    layout.getChildren().add(temp);
+                    Button temp = new Button(e.getName().toUpperCase());
+                    buttons.getChildren().add(temp);
                     temp.setOnMouseClicked(ee -> {
                         e.mouseClicked(ee);
                     });
@@ -267,40 +236,13 @@ public class Main extends Application {
                 break;
             }
         }
-        /*Button room1 = new Button(roomList.get(0).getName());
-        Button room2 = new Button(roomList.get(1).getName());
-        room1.setOnAction(e -> {
-            roomList.get(0).addPlayer(player);
-            //player.setPlayerName(client.getPlayerName());  //
-            roomList.get(0).addPlayer(player.getPlayerNick());
-            player.setContainingRoom(roomList.get(0));
-            gameRoomView = new GameRoomView(roomList.get(0),this);
-            player.setContainingGameRoomView(gameRoomView);
-            client.sendGameRoomInfo("room1",player.getPlayerNick()); //
-            primaryStage.setScene(new Scene(gameRoomView,WIDTH,HEIGHT));
-        });
-        room2.setOnAction(e -> {
-            roomList.get(1).addPlayer(player);
-            //primaryStage.setScene(new Scene(roomList.get(1),WIDTH,HEIGHT));           
-        });*/
         Button back = new Button("Back");
-        Button start = new Button("Start");
-        /*start.setOnAction(e -> {
-            primaryStage.setScene(startGame());
-        });*/
         back.setOnAction(e -> {
             primaryStage.getScene().setRoot(mainMenu());
         });
-        Button createRoom = new Button("Create Room");
-        createRoom.setOnAction(e -> {
-            primaryStage.getScene().setRoot(createRoom());
-        });
-        Button joinRoom = new Button("Join");
-        /*joinRoom.setOnAction(e -> {
-            primaryStage.getScene().setRoot(joinRoom(e.getSource()));
-        });*/
-        layout.getChildren().addAll(back,start,rooms,createRoom,joinRoom);
-        layout.setBackground(new Background(new BackgroundImage(new Image("/images/background.png"),
+        layout.getChildren().add(buttons);
+        buttons.getChildren().addAll(back);
+        layout.setBackground(new Background(new BackgroundImage(new Image("/images/background.jpg"),
                 BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT,
                 BackgroundPosition.CENTER, BackgroundSize.DEFAULT)));
         return layout;
@@ -347,7 +289,7 @@ public class Main extends Application {
         back.setLayoutY(0);
         info.setLayoutX(WIDTH/2);
         info.setLayoutY(HEIGHT/2);
-        pane.setBackground(new Background(new BackgroundImage(new Image("/images/background.png"),
+        pane.setBackground(new Background(new BackgroundImage(new Image("/images/background.jpg"),
                 BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT,
                 BackgroundPosition.CENTER, BackgroundSize.DEFAULT)));
         return pane;
@@ -397,13 +339,20 @@ public class Main extends Application {
         Button selectCardTheme = new Button("Classic");
         Label tableBackground = new Label("Table Background");
         Button selectBackground = new Button("Green");
-        VBox layout = new VBox(5);
+        Pane layout = new Pane();
+        VBox buttons = new VBox(10);
+        layout.getStylesheets().add(style);
+        buttons.setLayoutX(305);
+        buttons.setLayoutY(257);
+        layout.setLayoutX(0);
+        layout.setLayoutY(0);
         layout.setPadding(new Insets(50,50,50,50));
-        layout.getChildren().addAll(back,displayName,displayNameField,setName,sound,slider,soundLevel,
+        buttons.getChildren().addAll(back,displayName,displayNameField,setName,sound,slider,soundLevel,
                 fullScreen,setFullScreen,cardTheme,selectCardTheme,tableBackground,selectBackground);
-        layout.setBackground(new Background(new BackgroundImage(new Image("/images/background.png"),
+        layout.setBackground(new Background(new BackgroundImage(new Image("/images/background.jpg"),
                 BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT,
                 BackgroundPosition.CENTER, BackgroundSize.DEFAULT)));
+        layout.getChildren().add(buttons);
         return layout;
         
     }
@@ -650,7 +599,9 @@ class Client extends Thread {
                     beingPlayed = true;
                     while (beingPlayed) {
                         //sendInfo tru mouseUtil
+                        
                         processInfo(); //6
+                        
                     }
                 }
                 if(roomInfoIn.length == 5){
@@ -782,6 +733,7 @@ class Client extends Thread {
     }
 
     public void processInfo() {
+       
         String[] info = new String[5];
         System.out.println("processing info");
         try {
@@ -821,9 +773,30 @@ class Client extends Thread {
             //draggedCard=null;
             draggedCardViews = null;
             draggedCards = null;
+            try {
+                Thread.sleep(160);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            Platform.runLater(
+                    () -> {
+                        gameArea.updatePlayerPoint();
+                    }
+            );
             return;
         }
+        try {
+            Thread.sleep(160);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        Platform.runLater(
+                () -> {
+                    gameArea.updatePlayerPoint();
+                }
+        );
         mouseUtil.startTurn(sourcePile, sourcePileView, cardView);
+         
 
     }
 

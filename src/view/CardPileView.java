@@ -96,5 +96,18 @@ public class CardPileView extends Pane implements Iterable<CardView>{
     public List<CardView> cardViewsUnder(CardView cardView){
         return cards.subList(cards.indexOf(cardView), cards.size());
     }
+    public int getTotalPoint(){
+        Iterator<CardView> cardIterator = this.iterator();
+        int point = 0;
+//        this.forEach(e -> {
+//            point += e.getCard().getPoint();
+//        });
+        while(cardIterator.hasNext()){
+            point += cardIterator.next().getCard().getPoint();
+            System.out.println("carddddddddd");
+            System.out.println(point);
+        }
+        return point;
+    }
     
 }

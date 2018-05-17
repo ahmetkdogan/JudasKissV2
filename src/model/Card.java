@@ -48,6 +48,26 @@ public class Card {
     public String toString(){
         return "Rank: "+ getRank() + " Suit: " + getSuit();
     }
+    public int getPoint(){
+        Rank rank = this.getRank();
+        int point = 0;
+        switch(rank){
+            case Ace : point = 1; break;
+            case Two : point = 2; break;
+            case Three : point = 3; break;
+            case Four : point = 4; break;
+            case Five : point = 5; break;
+            case Six : point = 6; break;
+            case Seven : point = 7; break;
+            case Eight : point = 8; break;
+            case Nine : point = 9; break;
+            case Ten : point = 10; break;
+            case Joker : point = 11; break;
+            case Queen : point = 12; break;
+            case King : point = 13; break;
+        }
+        return point;
+    }
     
     protected String buildId() {
 
