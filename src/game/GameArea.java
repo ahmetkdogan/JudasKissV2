@@ -1,9 +1,13 @@
+/**
+ *
+ * @author ahmet karadogan
+ */
+
 package game;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -43,9 +47,7 @@ public class GameArea extends Pane{
     private TextField tf;
     private Main main;
     
-    public void setTurn(String a){
-        addMsg(a);
-    }
+    
     public GameArea(){
         this.slotPileViews = FXCollections.observableArrayList();
         this.playerSlotPileViews = FXCollections.observableArrayList();
@@ -95,24 +97,21 @@ public class GameArea extends Pane{
         player3Point.setLayoutX(180);
         player3Point.setLayoutY(394);
         getChildren().add(player3Point);
-        
-//        playerPoints.get(3).setLayoutX(180);
-//        playerPoints.get(3).setLayoutY(394);
-//        getChildren().add(playerPoints.get(3));
 
     }
     
     public void updatePlayerPoint(){
-           
-                player0Point.setText(playerSlotPileViews.get(0).getTotalPoint()+"");
-                player1Point.setText(playerSlotPileViews.get(1).getTotalPoint()+"");
-                player2Point.setText(playerSlotPileViews.get(2).getTotalPoint()+"");
-                player3Point.setText(playerSlotPileViews.get(3).getTotalPoint()+"");
+
+        player0Point.setText(playerSlotPileViews.get(0).getTotalPoint() + "");
+        player1Point.setText(playerSlotPileViews.get(1).getTotalPoint() + "");
+        player2Point.setText(playerSlotPileViews.get(2).getTotalPoint() + "");
+        player3Point.setText(playerSlotPileViews.get(3).getTotalPoint() + "");
        
     }
     
     public void chatArea(){
         ta = new TextArea();
+        ta.setEditable(false);
         ta.setPrefSize(450, 200);
         tf = new TextField();
         tf.setPrefWidth(450);
@@ -391,12 +390,9 @@ public class GameArea extends Pane{
         
         if(mainPileView.getShortID().equals(id)) return mainPileView;
         if(deckPileView.getShortID().equals(id)) return deckPileView;
-        System.out.println("PileView not found");
         return null;
         
     }
-
-    
     
     public void setTableauBackground(Image tableauBackground){
         setBackground(new Background(new BackgroundImage(tableauBackground,
@@ -404,8 +400,9 @@ public class GameArea extends Pane{
                 BackgroundPosition.CENTER, BackgroundSize.DEFAULT)));
     }
     
-    
-    
+    public void setTurn(String a){
+        addMsg(a);
+    }
     
    
 }

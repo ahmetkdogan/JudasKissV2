@@ -1,8 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ *
+ * @author ahmet karadogan
  */
+
 package game;
 
 import java.util.Iterator;
@@ -10,13 +10,9 @@ import java.util.List;
 import model.Card;
 import model.CardDeck;
 import model.CardPile;
-import java.util.ListIterator;
 import javafx.collections.FXCollections;
 
-/**
- *
- * @author ahmet
- */
+
 public class Game {
     private CardDeck deck;
     private CardPile mainPile;
@@ -39,6 +35,8 @@ public class Game {
         this.hand2Piles = FXCollections.observableArrayList();
         this.hand3Piles = FXCollections.observableArrayList();
         this.deckPile=new CardPile(CardPile.Type.Deck,"D");
+        
+        // Create all card piles
         for(int i = 0 ; i<4 ; i++)
             slotPiles.add(new CardPile(CardPile.Type.Slot,"S"+i));
         for(int i = 0; i<4 ; i++)
@@ -51,6 +49,7 @@ public class Game {
             hand2Piles.add(new CardPile(CardPile.Type.Hand,"P2H"+i));
         for(int i = 0; i<4 ; i++)
             hand3Piles.add(new CardPile(CardPile.Type.Hand,"P3H"+i));
+        
         this.rules = new Rules(mainPile,slotPiles,playerSlotPiles,hand0Piles);
         
         
@@ -139,7 +138,7 @@ public class Game {
        Iterator<Card> deckIterator = deck.iterator();
         
        
-       
+       // Deal the cards from the deck to players when the game started.
        for(CardPile handPile : hand0Piles){
            handPile.addCard(deckIterator.next());
        }
@@ -148,7 +147,6 @@ public class Game {
        }
        for(CardPile handPile : hand0Piles){
            handPile.addCard(deckIterator.next());
-           System.out.println(handPile.getTopCard());
        }
        //
        for(CardPile handPile : hand1Piles){
@@ -226,7 +224,6 @@ public class Game {
         
         if(mainPile.getId().equals(id)) return mainPile;
         if(deckPile.getId().equals(id)) return deckPile;
-        System.out.println("Pile not found");
         return null;
         
     }

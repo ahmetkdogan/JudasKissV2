@@ -1,3 +1,8 @@
+/**
+ *
+ * @author ahmet karadogan
+ */
+
 package model;
 
 public enum Suit{

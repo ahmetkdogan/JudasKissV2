@@ -1,3 +1,8 @@
+/**
+ *
+ * @author hilal senturk, yaprak bulut, ahmet karadogan
+ */
+
 package view;
 
 import model.Card;

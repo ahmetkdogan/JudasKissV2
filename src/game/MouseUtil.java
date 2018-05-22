@@ -1,7 +1,10 @@
-    package game;
+/**
+ *
+ * @author ahmet karadogan
+ */
 
-import java.util.ArrayList;
-import java.util.Iterator;
+package game;
+    
 import model.Card;
 import model.CardPile;
 import view.CardPileView;
@@ -13,18 +16,14 @@ import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import javafx.util.Duration;
-
 import java.util.List;
-import java.util.ListIterator;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
-import javafx.scene.image.Image;
 import javafx.scene.input.MouseButton;
 
 
@@ -78,15 +77,6 @@ public class MouseUtil {
         draggedCards = activePile.cardsUnder(card);
         
         client.sendInfo(card, cardView, activePile, activePileView, dummy);
-       /* if(draggedCards.size() > 1 && !pilePlayed  && (activePile.equals(game.getPlayerSlotPiles().get(0))|| activePile.equals(game.getPlayerSlotPiles().get(1)) 
-                || activePile.equals(game.getPlayerSlotPiles().get(2)) || activePile.equals(game.getPlayerSlotPiles().get(3)))){
-            pilePlayed = true;
-            cardView.setLayoutX(cardView.getLayoutX()+10);
-            startTurn(activePile, activePileView, cardView);
-            return;
-            
-        }*/
-        
         }
     };
     
@@ -138,15 +128,12 @@ public class MouseUtil {
         CardPile activePile = game.getPileById(activePileView.getShortID());
         if(checkAllPiles(card,cardView,activePile,activePileView)){
             client.sendInfo(card, cardView, activePile, activePileView, destPileView2);
-          
              
-            //startTurn(activePile, activePileView, cardView);
             return;
             
             
         }
         draggedCardViews.forEach(this::slideBack);
-        //draggedCard=null;
         draggedCardViews = null;
         draggedCards=null;
         }
@@ -180,8 +167,7 @@ public class MouseUtil {
         boolean result = false;
         
         if(!pileView.equals(activePileView) && 
-                isOverPile(cardView,pileView) /*&&
-                handleValidMove(card,activePile,activePileView,pileView)*/)
+                isOverPile(cardView,pileView))
             result = true;
         
         return result;
@@ -194,11 +180,10 @@ public class MouseUtil {
         for(CardPileView pileView : pileViews){
             if(pileView.equals(activePileView)){
                 result = false; 
-                break;/////////// 17.35 - 17.04.2017
+                break;
             }
             
-            if(isOverPile(cardView,pileView) /*&& 
-                    handleValidMove(card,activePile,activePileView,pileView)*/){
+            if(isOverPile(cardView,pileView)){
                 result = true;
             }
             
@@ -224,22 +209,6 @@ public class MouseUtil {
             
     }
     
-    private boolean handleValidMove(Card card, CardPile sourcePile,
-            CardPileView sourcePileView,CardPileView destPileView){
-        CardPile destPile = game.getPileById(destPileView.getShortID());
-        
-        if(game.getRules().isMoveValid(draggedCards, destPile)){
-            game.moveCards(draggedCards, sourcePile, destPile);
-            slideToPile(draggedCardViews,sourcePileView,destPileView);
-            draggedCards = null;
-            draggedCardViews = null;
-            return true;
-        }
-        else {
-         return false;   
-        }
-        
-    }
     public boolean handleValidMove(Card card, CardPile sourcePile,
             CardPileView sourcePileView,CardPileView destPileView,List<CardView> draggedCardViews,List<Card> draggedCards){
         CardPile destPile = game.getPileById(destPileView.getShortID());

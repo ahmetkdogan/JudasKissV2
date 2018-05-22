@@ -1,3 +1,7 @@
+/**
+ *
+ * @author ahmet karadogan
+ */
 package model;
 
 import java.util.ArrayList;

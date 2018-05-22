@@ -1,19 +1,21 @@
+/**
+ *
+ * @author ahmet karadogan
+ */
+
 package game;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.layout.Pane;
 
 public class GameRoom implements Serializable {
     private String name;
     private String roomPassword;
     private int roomID;
     private static int totalRooms = 0;
-    private List<Player> players;
-    private List<String> players2;
+    private List<Player> players;  // List for players in the room
+    private List<String> players2; // List for player's nicks in the room
     private int totalPlayers = 0;
     
     public GameRoom(String name,int roomID){

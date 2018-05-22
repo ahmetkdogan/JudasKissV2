@@ -1,3 +1,8 @@
+/**
+ *
+ * @author ahmet karadogan
+ */
+
 package game;
 
 import java.util.List;

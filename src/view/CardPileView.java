@@ -1,6 +1,10 @@
+/**
+ *
+ * @author hilal senturk, yaprak bulut, ahmet karadogan
+ */
+
 package view;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
@@ -99,13 +103,8 @@ public class CardPileView extends Pane implements Iterable<CardView>{
     public int getTotalPoint(){
         Iterator<CardView> cardIterator = this.iterator();
         int point = 0;
-//        this.forEach(e -> {
-//            point += e.getCard().getPoint();
-//        });
         while(cardIterator.hasNext()){
             point += cardIterator.next().getCard().getPoint();
-            System.out.println("carddddddddd");
-            System.out.println(point);
         }
         return point;
     }

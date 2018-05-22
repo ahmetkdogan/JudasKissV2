@@ -1,11 +1,12 @@
+/**
+ *
+ * @author hilal senturk, yaprak bulut, ahmet karadogan
+ */
+
 package game;
 
 import javafx.scene.input.MouseEvent;
 import java.io.Serializable;
-import java.util.List;
-import javafx.event.EventHandler;
-import javafx.geometry.Insets;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -16,18 +17,14 @@ import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.BackgroundPosition;
 import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
 public class GameRoomView extends Pane implements Serializable{
     private String name;
-    private String roomPassword;
     private int roomID;
     private static int totalRooms = 0;
-    private List<Player> players;
-    private List<String> players2;
     private int totalPlayers = 0;
     private GameRoom gameRoom;
     private Label playerNames = new Label("PLAYERS");
@@ -48,7 +45,7 @@ public class GameRoomView extends Pane implements Serializable{
         layout.setLayoutY(257);
         ta = new TextArea();
         tf = new TextField();
-        ta.setEditable(true);
+        ta.setEditable(false);
         this.getStylesheets().add(style);
         this.setBackground(new Background(new BackgroundImage(new Image("/images/background.jpg"),
                 BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT,
@@ -57,14 +54,13 @@ public class GameRoomView extends Pane implements Serializable{
         VBox chat = new VBox(5);
         chat.getChildren().addAll(ta,tf);
         tf.setOnAction(e -> {
-            main.sendMsg(tf.getText().toString());
+                main.sendMsg(tf.getText().toString());
             tf.setText("");
         });
         start = new Button("START");
         back = new Button("Back");
         back.setLayoutX(320);
         back.setLayoutY(747);
-        //start.setMouseTransparent(true);
         this.main = main;
         this.gameRoom = gameRoom;
         this.name = gameRoom.getName();
@@ -77,7 +73,6 @@ public class GameRoomView extends Pane implements Serializable{
             main.primaryStage.getScene().setRoot(main.multiplayer());
             main.getPlayer().setContainingGameRoomView(null);
             main.getPlayer().setContainingRoom(null);
-            //gameRoom.getPlayers2().remove(main.getPlayer().playerName);
             main.sendExitRoomInfo(name);
             main.sendMsg("left");
             main.getPlayer().setPlayerName(null);
